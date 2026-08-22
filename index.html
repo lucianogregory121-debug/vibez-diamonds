@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VIBEZ DIAMONDS</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#08070d;--card:#151221;--card2:#1c172c;--purple:#8b5cf6;--purple2:#6d28d9;--text:#fff;--muted:#aaa3b8;--line:#2b2440}
+body{margin:0;font-family:Arial,sans-serif;background:radial-gradient(circle at 50% -10%,#2b1454 0,#100b19 38%,#08070d 70%);color:var(--text);min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer}
+.header{padding:18px 6%;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff10;background:#09070dcc;backdrop-filter:blur(10px);position:sticky;top:0;z-index:5}
+.logo{font-weight:1000;font-size:25px;letter-spacing:1px}.logo span{color:#a78bfa}
+.badge{font-size:12px;color:#d8caff;background:#7c3aed22;border:1px solid #8b5cf655;padding:8px 12px;border-radius:99px}
+.hero{max-width:1050px;margin:auto;padding:55px 20px 25px;text-align:center}
+.hero h1{font-size:clamp(36px,8vw,70px);margin:0 0 10px}
+.hero h1 span{color:#a78bfa}
+.hero p{color:var(--muted);font-size:17px}
+.wrap{max-width:1050px;margin:auto;padding:20px}
+.panel{background:linear-gradient(145deg,#181329,#100d18);border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:0 20px 70px #0008}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{display:block;color:#cfc7dc;font-size:13px;margin:0 0 7px}
+input{width:100%;padding:14px;border:1px solid var(--line);background:#0b0911;color:#fff;border-radius:13px;outline:none}
+input:focus{border-color:#8b5cf6}
+.products{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.product{border:1px solid var(--line);background:#120f1d;border-radius:18px;padding:18px;transition:.2s}
+.product:hover{transform:translateY(-2px);border-color:#8b5cf677}
+.diamonds{font-size:25px;font-weight:900}.price{color:#c4b5fd;margin:8px 0 15px}
+.buy{width:100%;border:0;border-radius:12px;padding:12px;background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;font-weight:800}
+.payment{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.pay{border:1px solid var(--line);background:#0e0b16;color:#ddd;padding:11px 14px;border-radius:12px}
+.pay.active{border-color:#9d7aff;background:#7c3aed22}
+.order{margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.order button{border:0;border-radius:13px;padding:14px 18px;background:#22c55e;color:#061108;font-weight:900}
+#selected{color:#c4b5fd}
+.notice{margin-top:20px;padding:14px;border-radius:13px;background:#7c3aed12;border:1px solid #8b5cf633;color:#cfc7dc;font-size:13px;line-height:1.5}
+footer{text-align:center;color:#756d83;padding:30px 15px;font-size:12px}
+@media(max-width:760px){.formgrid{grid-template-columns:1fr}.products{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.products{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo">VIBEZ <span>DIAMONDS</span></div>
+  <div class="badge">Loja online</div>
+</header>
+
+<section class="hero">
+  <h1>Compre seus <span>diamantes</span></h1>
+  <p>Escolha o pacote, informe o ID do jogador e acompanhe seu pedido.</p>
+</section>
+
+<main class="wrap">
+<section class="panel">
+  <div class="formgrid">
+    <div>
+      <label for="playerId">ID do jogador</label>
+      <input id="playerId" inputmode="numeric" placeholder="Digite o ID do Free Fire">
+    </div>
+    <div>
+      <label>Pacote selecionado</label>
+      <div id="selected" style="padding:14px 0">Nenhum pacote selecionado</div>
+    </div>
+  </div>
+
+  <h3>Escolha seu pacote</h3>
+  <div id="products" class="products"></div>
+
+  <div class="payment">
+    <button class="pay active" data-pay="pix" onclick="setPay(this)">PIX</button>
+    <button class="pay" data-pay="card" onclick="setPay(this)">Cartão</button>
+  </div>
+
+  <div class="order">
+    <button onclick="createOrder()">Continuar pedido</button>
+    <span id="result"></span>
+  </div>
+
+  <div class="notice">
+    Esta V2 deixa a integração do fornecedor preparada no servidor. Não coloque
+    IP, token ou chave secreta do fornecedor no código do navegador. A entrega
+    automática só deve ser ativada depois de contratar um fornecedor autorizado
+    e validar as regras, termos e obrigações aplicáveis ao seu negócio.
+  </div>
+</section>
+</main>
+
+<footer>VIBEZ DIAMONDS • Estrutura V2</footer>
+
+<script>
+let selected = null;
+let payment = "pix";
+
+function money(v){
+  return v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+}
+function setPay(btn){
+  document.querySelectorAll(".pay").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+  payment = btn.dataset.pay;
+}
+function selectProduct(p){
+  selected = p;
+  document.getElementById("selected").textContent =
+    p.diamonds.toLocaleString("pt-BR")+" diamantes • "+money(p.price);
+  document.querySelectorAll(".product").forEach(x=>x.style.borderColor="");
+  const el=document.getElementById("p-"+p.id);
+  if(el) el.style.borderColor="#9d7aff";
+}
+async function loadProducts(){
+  const r=await fetch("/api/products");
+  const data=await r.json();
+  document.getElementById("products").innerHTML=data.products.map(p=>`
+    <div class="product" id="p-${p.id}">
+      <div class="diamonds">💎 ${p.diamonds.toLocaleString("pt-BR")}</div>
+      <div class="price">${money(p.price)}</div>
+      <button class="buy" onclick='selectProduct(${JSON.stringify(p)})'>Selecionar</button>
+    </div>
+  `).join("");
+}
+async function createOrder(){
+  const playerId=document.getElementById("playerId").value.trim();
+  const result=document.getElementById("result");
+  if(!playerId) return result.textContent="Digite o ID do jogador.";
+  if(!selected) return result.textContent="Selecione um pacote.";
+  result.textContent="Criando pedido...";
+  try{
+    const r=await fetch("/api/orders",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({playerId,productId:selected.id,paymentMethod:payment})
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||"Erro");
+    result.textContent="Pedido "+data.order.id+" criado. Status: aguardando integração.";
+  }catch(e){
+    result.textContent=e.message;
+  }
+}
+loadProducts();
+</script>
+</body>
+</html>
