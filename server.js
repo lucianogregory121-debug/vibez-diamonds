@@ -11,7 +11,7 @@ app.use(helmet({
   contentSecurityPolicy: false
 }));
 app.use(express.json({ limit: "1mb" }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(__dirname));
 
 const products = [
   { id: "d100", diamonds: 100, price: 4.99 },
