@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta name="theme-color" content="#08050f">
-  <meta name="description" content="VIBEZ DIAMONDS - recarga de diamantes">
-
   <title>VIBEZ DIAMONDS</title>
+
+  <meta name="description"
+        content="Compre seus diamantes de Free Fire na VIBEZ DIAMONDS. Pagamento seguro.">
 
   <style>
     * {
@@ -17,310 +17,245 @@
     }
 
     :root {
-      --bg: #07050c;
-      --panel: #110d1d;
-      --panel2: #171025;
-      --purple: #8b45ff;
-      --purple2: #b56cff;
-      --pink: #d946ef;
-      --green: #19e66b;
-      --text: #ffffff;
-      --muted: #aaa2b8;
-      --border: rgba(180, 100, 255, .22);
+      --purple: #8b5cf6;
+      --purple2: #a855f7;
+      --dark: #06040c;
+      --card: rgba(15, 10, 28, .92);
+      --border: rgba(168, 85, 247, .28);
+      --green: #18e66b;
+      --text: #fff;
+      --muted: #aaa4b8;
     }
 
     body {
       min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% 10%, #42117d 0%, transparent 35%),
+        radial-gradient(circle at 10% 40%, #251044 0%, transparent 30%),
+        #05030a;
       color: var(--text);
       font-family: Arial, Helvetica, sans-serif;
-      background:
-        radial-gradient(circle at 50% 0%, #32105d 0%, transparent 35%),
-        radial-gradient(circle at 10% 30%, #160d2b 0%, transparent 30%),
-        radial-gradient(circle at 90% 30%, #210b32 0%, transparent 30%),
-        var(--bg);
       overflow-x: hidden;
     }
 
-    /* =========================
-       PARTÍCULAS
-    ========================= */
-
+    /* ESTRELAS */
     body::before {
       content: "";
       position: fixed;
       inset: 0;
       pointer-events: none;
-      opacity: .35;
-      background-image:
-        radial-gradient(circle, #fff 1px, transparent 1px),
-        radial-gradient(circle, #b56cff 1px, transparent 1px);
-      background-size: 90px 90px, 130px 130px;
-      background-position: 0 0, 30px 50px;
-      animation: stars 18s linear infinite;
-    }
+      opacity: .55;
 
-    @keyframes stars {
-      from {
-        transform: translateY(0);
-      }
-      to {
-        transform: translateY(90px);
-      }
+      background-image:
+        radial-gradient(circle, #ffffff 1px, transparent 1px),
+        radial-gradient(circle, #a855f7 1px, transparent 1px);
+
+      background-size: 95px 95px, 150px 150px;
+      background-position: 0 0, 45px 65px;
     }
 
     /* =========================
-       HEADER
+       TOPO
     ========================= */
 
     header {
-      width: 100%;
-      height: 70px;
-      padding: 0 6%;
+      position: relative;
+      z-index: 10;
+
+      height: 68px;
+
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: relative;
-      z-index: 20;
-      background: rgba(5, 3, 10, .78);
-      border-bottom: 1px solid rgba(174, 91, 255, .18);
-      backdrop-filter: blur(15px);
+
+      padding: 0 5%;
+
+      background: rgba(5, 3, 12, .92);
+      border-bottom: 1px solid rgba(168, 85, 247, .2);
+
+      backdrop-filter: blur(12px);
     }
 
     .logo {
-      font-size: 21px;
+      font-size: 22px;
       font-weight: 900;
       letter-spacing: .5px;
     }
 
     .logo span {
-      color: var(--purple2);
-      text-shadow: 0 0 18px #914cff;
+      color: #a855f7;
+      text-shadow: 0 0 15px #8b5cf6;
     }
 
-    .status {
+    .online {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 13px;
-      border: 1px solid rgba(139, 92, 246, .35);
+      gap: 7px;
+
+      padding: 9px 15px;
+
+      border: 1px solid rgba(168, 85, 247, .5);
       border-radius: 30px;
-      background: rgba(80, 35, 130, .18);
-      color: #ddd4e8;
+
+      background: rgba(139, 92, 246, .08);
+
       font-size: 12px;
+      font-weight: bold;
     }
 
-    .status-dot {
+    .online-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #20e86c;
-      box-shadow: 0 0 12px #20e86c;
+      background: #20e66c;
+      box-shadow: 0 0 12px #20e66c;
     }
 
     /* =========================
-       HERO
+       BANNER
     ========================= */
 
     .hero {
-      min-height: 390px;
       position: relative;
-      overflow: hidden;
+      min-height: 490px;
+
       display: flex;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      padding: 70px 20px 45px;
-      border-bottom: 1px solid rgba(174, 91, 255, .15);
+
+      overflow: hidden;
+
+      border-bottom: 1px solid rgba(168, 85, 247, .18);
     }
 
-    .hero::before {
-      content: "";
+    /*
+      IMAGEM ENVIADA PELO USUÁRIO
+    */
+
+    .hero-image {
       position: absolute;
-      width: 750px;
-      height: 750px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(135, 54, 255, .27), transparent 65%);
-      top: -430px;
-      left: 50%;
-      transform: translateX(-50%);
+      inset: 0;
+
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+      object-position: center;
+
+      opacity: .72;
+
+      filter:
+        saturate(1.08)
+        contrast(1.04);
+
+      transform: scale(1.02);
+    }
+
+    /* camada escura */
+    .hero::after {
+      content: "";
+
+      position: absolute;
+      inset: 0;
+
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(20, 5, 35, .28),
+          rgba(10, 3, 18, .65) 65%,
+          #08040e 100%
+        );
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 500px;
+      height: 300px;
+
+      background: #8b5cf6;
+      filter: blur(150px);
+
+      opacity: .20;
+
+      z-index: 1;
     }
 
     .hero-content {
       position: relative;
-      z-index: 10;
-      max-width: 850px;
+      z-index: 3;
+
+      width: min(900px, 92%);
+
+      text-align: center;
+
+      padding-top: 30px;
     }
 
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 14px;
-      border: 1px solid rgba(181, 108, 255, .35);
+    .badge {
+      display: inline-block;
+
+      padding: 9px 17px;
+
       border-radius: 30px;
-      background: rgba(139, 69, 255, .10);
-      color: #d9c6ff;
-      font-size: 12px;
-      font-weight: bold;
-      text-transform: uppercase;
+
+      background: rgba(67, 18, 116, .65);
+
+      border: 1px solid rgba(192, 132, 252, .45);
+
+      color: #d8b4fe;
+
+      font-size: 11px;
+      font-weight: 900;
+
       letter-spacing: 1.5px;
-      margin-bottom: 18px;
-      box-shadow: 0 0 25px rgba(139, 69, 255, .12);
+
+      margin-bottom: 20px;
+
+      box-shadow: 0 0 25px rgba(139, 92, 246, .18);
     }
 
     .hero h1 {
-      font-size: clamp(42px, 8vw, 82px);
-      line-height: .95;
+      font-size: clamp(45px, 8vw, 88px);
+
+      line-height: .9;
+
       font-weight: 1000;
-      letter-spacing: -3px;
+
       text-transform: uppercase;
+
       text-shadow:
-        0 4px 30px rgba(0,0,0,.8),
-        0 0 35px rgba(139, 69, 255, .28);
+        0 5px 0 rgba(0,0,0,.7),
+        0 0 30px rgba(168,85,247,.45);
     }
 
     .hero h1 span {
-      background: linear-gradient(90deg, #ffffff, #bd80ff, #8b45ff);
+      display: block;
+
+      background:
+        linear-gradient(
+          180deg,
+          #ffffff 0%,
+          #d8b4fe 45%,
+          #7c3aed 100%
+        );
+
       -webkit-background-clip: text;
       background-clip: text;
+
       color: transparent;
     }
 
     .hero p {
-      margin: 22px auto 0;
       max-width: 650px;
-      color: #b8afc4;
-      line-height: 1.6;
+
+      margin: 24px auto 0;
+
+      color: #ddd6e7;
+
       font-size: 15px;
-    }
+      line-height: 1.6;
 
-    /* =========================
-       PERSONAGENS ATRÁS DO BANNER
-    ========================= */
-
-    .fighter {
-      position: absolute;
-      bottom: -20px;
-      width: 220px;
-      height: 330px;
-      opacity: .48;
-      filter: drop-shadow(0 0 25px rgba(139,69,255,.25));
-      z-index: 2;
-    }
-
-    .fighter.left {
-      left: 2%;
-      transform: scaleX(-1) rotate(-4deg);
-    }
-
-    .fighter.right {
-      right: 2%;
-      transform: rotate(4deg);
-    }
-
-    .fighter .head {
-      position: absolute;
-      width: 54px;
-      height: 65px;
-      border-radius: 45% 45% 40% 40%;
-      background: linear-gradient(135deg, #282238, #08060d);
-      top: 30px;
-      left: 83px;
-      box-shadow: 0 0 30px rgba(160,80,255,.2);
-    }
-
-    .fighter .hair {
-      position: absolute;
-      width: 65px;
-      height: 42px;
-      border-radius: 60% 60% 20% 20%;
-      background: #09070d;
-      top: 18px;
-      left: 77px;
-      transform: rotate(-8deg);
-    }
-
-    .fighter .body {
-      position: absolute;
-      width: 105px;
-      height: 155px;
-      top: 92px;
-      left: 57px;
-      border-radius: 35px 35px 18px 18px;
-      background:
-        linear-gradient(90deg, #0a0710, #302047 50%, #0a0710);
-      border: 1px solid rgba(181,108,255,.18);
-    }
-
-    .fighter .vest {
-      position: absolute;
-      width: 75px;
-      height: 100px;
-      top: 105px;
-      left: 72px;
-      border-radius: 20px;
-      background: linear-gradient(90deg, #0a0810, #191323, #08060d);
-    }
-
-    .fighter .arm {
-      position: absolute;
-      width: 32px;
-      height: 145px;
-      background: linear-gradient(#171020, #07050b);
-      border-radius: 20px;
-      top: 105px;
-    }
-
-    .fighter .arm.one {
-      left: 35px;
-      transform: rotate(24deg);
-    }
-
-    .fighter .arm.two {
-      right: 35px;
-      transform: rotate(-27deg);
-    }
-
-    .fighter .leg {
-      position: absolute;
-      width: 43px;
-      height: 125px;
-      background: linear-gradient(#15101e, #050409);
-      border-radius: 22px;
-      top: 225px;
-    }
-
-    .fighter .leg.one {
-      left: 66px;
-      transform: rotate(4deg);
-    }
-
-    .fighter .leg.two {
-      left: 116px;
-      transform: rotate(-5deg);
-    }
-
-    .weapon {
-      position: absolute;
-      width: 130px;
-      height: 5px;
-      background: linear-gradient(90deg, #8b45ff, #fff, #8b45ff);
-      border-radius: 10px;
-      top: 155px;
-      left: 85px;
-      transform: rotate(-35deg);
-      box-shadow: 0 0 15px #9c4dff;
-    }
-
-    .weapon::after {
-      content: "";
-      position: absolute;
-      width: 17px;
-      height: 17px;
-      border: 3px solid #8b45ff;
-      border-radius: 50%;
-      left: -10px;
-      top: -6px;
+      text-shadow: 0 2px 8px #000;
     }
 
     /* =========================
@@ -328,184 +263,234 @@
     ========================= */
 
     .container {
-      width: min(1100px, 94%);
-      margin: -5px auto 70px;
       position: relative;
-      z-index: 15;
+      z-index: 5;
+
+      width: min(1100px, 94%);
+
+      margin: -45px auto 70px;
     }
 
-    .shop-panel {
-      padding: 24px;
-      border-radius: 25px;
+    .panel {
+      padding: 25px;
+
+      border-radius: 22px;
+
       background:
-        linear-gradient(145deg, rgba(25,18,39,.96), rgba(10,8,17,.97));
+        linear-gradient(
+          145deg,
+          rgba(25, 15, 43, .97),
+          rgba(10, 7, 18, .97)
+        );
+
       border: 1px solid var(--border);
+
       box-shadow:
-        0 25px 90px rgba(0,0,0,.55),
-        0 0 50px rgba(112,44,180,.08);
+        0 30px 80px rgba(0,0,0,.6),
+        0 0 50px rgba(139,92,246,.08);
+
+      backdrop-filter: blur(15px);
     }
 
     /* =========================
-       FORM
+       JOGADOR
     ========================= */
 
-    .top-form {
+    .top-fields {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 15px;
+
       margin-bottom: 25px;
     }
 
     .field label {
       display: block;
+
       margin-bottom: 8px;
-      color: #aaa1b9;
-      font-size: 12px;
-      font-weight: bold;
+
+      color: #c4b5fd;
+
+      font-size: 11px;
+      font-weight: 900;
+
       text-transform: uppercase;
       letter-spacing: .7px;
     }
 
-    .field input {
+    input {
       width: 100%;
-      height: 50px;
-      padding: 0 15px;
-      color: #fff;
-      background: #09070e;
-      border: 1px solid #2b213d;
+
+      height: 52px;
+
+      padding: 0 16px;
+
       border-radius: 13px;
+
+      border: 1px solid rgba(168,85,247,.2);
+
       outline: none;
+
+      color: white;
+
+      background: #08050f;
+
+      font-size: 14px;
+
       transition: .2s;
-      font-size: 14px;
     }
 
-    .field input:focus {
-      border-color: #8b45ff;
-      box-shadow: 0 0 0 3px rgba(139,69,255,.10);
-    }
+    input:focus {
+      border-color: #a855f7;
 
-    .selected-box {
-      min-height: 50px;
-      display: flex;
-      align-items: center;
-      padding: 0 15px;
-      color: #cfc4dd;
-      background: #09070e;
-      border: 1px solid #2b213d;
-      border-radius: 13px;
-      font-size: 14px;
-    }
-
-    .selected-box.active {
-      border-color: #8b45ff;
-      color: #fff;
-      box-shadow: 0 0 18px rgba(139,69,255,.10);
+      box-shadow:
+        0 0 0 3px rgba(168,85,247,.12),
+        0 0 20px rgba(168,85,247,.12);
     }
 
     /* =========================
-       TÍTULO
+       PACOTES
     ========================= */
 
     .section-title {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 14px;
+
+      margin-bottom: 15px;
     }
 
     .section-title h2 {
-      font-size: 17px;
+      font-size: 18px;
     }
 
-    .section-title span {
-      color: #9c91a9;
-      font-size: 12px;
+    .section-title small {
+      color: var(--muted);
+      font-size: 11px;
     }
 
-    /* =========================
-       PRODUTOS
-    ========================= */
-
-    #products {
+    .products {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
       gap: 13px;
     }
 
     .product {
       position: relative;
-      padding: 18px;
-      min-height: 150px;
-      overflow: hidden;
-      border-radius: 17px;
-      background:
-        linear-gradient(145deg, #151020, #0d0a14);
-      border: 1px solid #29203a;
-      transition: transform .2s, border-color .2s, box-shadow .2s;
-    }
 
-    .product::before {
-      content: "";
-      position: absolute;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: #8b45ff;
-      filter: blur(70px);
-      opacity: .08;
-      top: -60px;
-      right: -40px;
+      padding: 18px;
+
+      min-height: 145px;
+
+      border-radius: 17px;
+
+      border: 1px solid rgba(168,85,247,.18);
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(25,17,40,.95),
+          rgba(10,7,17,.95)
+        );
+
+      cursor: pointer;
+
+      transition:
+        transform .2s,
+        border-color .2s,
+        box-shadow .2s;
     }
 
     .product:hover {
       transform: translateY(-4px);
-      border-color: rgba(163, 85, 255, .55);
-      box-shadow: 0 12px 35px rgba(0,0,0,.35);
+
+      border-color: rgba(168,85,247,.7);
+
+      box-shadow:
+        0 15px 35px rgba(0,0,0,.4),
+        0 0 25px rgba(139,92,246,.12);
     }
 
     .product.selected {
-      border-color: #9b55ff;
+      border-color: #a855f7;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(74,29,120,.45),
+          rgba(18,10,30,.98)
+        );
+
       box-shadow:
-        0 0 0 1px #9b55ff,
-        0 10px 35px rgba(139,69,255,.16);
+        0 0 0 2px rgba(168,85,247,.18),
+        0 0 30px rgba(139,92,246,.18);
     }
 
-    .diamond-icon {
-      font-size: 23px;
+    .product.selected::before {
+      content: "✓";
+
+      position: absolute;
+
+      top: 10px;
+      right: 10px;
+
+      width: 25px;
+      height: 25px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 50%;
+
+      background: #8b5cf6;
+
+      font-weight: 900;
+    }
+
+    .diamond {
+      font-size: 25px;
+      margin-bottom: 7px;
     }
 
     .diamond-count {
-      margin-top: 5px;
-      font-size: 23px;
+      font-size: 22px;
       font-weight: 900;
     }
 
     .price {
-      margin-top: 5px;
-      color: #b9a9c9;
-      font-size: 13px;
+      margin-top: 8px;
+
+      color: #c4b5fd;
+
+      font-size: 14px;
+      font-weight: bold;
     }
 
-    .choose {
+    .product button {
       width: 100%;
-      height: 40px;
-      margin-top: 15px;
+
+      margin-top: 13px;
+
+      height: 38px;
+
       border: 0;
       border-radius: 10px;
-      cursor: pointer;
+
       color: white;
+
+      background:
+        linear-gradient(
+          90deg,
+          #7c3aed,
+          #a855f7
+        );
+
       font-weight: 900;
-      background: linear-gradient(90deg, #7135d7, #984cff);
-      box-shadow: 0 6px 18px rgba(139,69,255,.18);
-      transition: .2s;
-    }
 
-    .choose:hover {
-      filter: brightness(1.12);
-    }
-
-    .product.selected .choose {
-      background: linear-gradient(90deg, #a65cff, #d06cff);
+      cursor: pointer;
     }
 
     /* =========================
@@ -513,267 +498,226 @@
     ========================= */
 
     .payment {
+      margin-top: 25px;
+    }
+
+    .payment-buttons {
       display: flex;
-      gap: 9px;
-      margin-top: 18px;
+      gap: 10px;
+
+      margin-bottom: 18px;
     }
 
-    .payment button {
-      border: 1px solid #31253f;
-      background: #0c0912;
-      color: #a9a0b3;
-      padding: 10px 17px;
-      border-radius: 10px;
-      cursor: pointer;
+    .method {
+      padding: 12px 20px;
+
+      border-radius: 11px;
+
+      border: 1px solid rgba(168,85,247,.25);
+
+      background: #0b0713;
+
+      color: white;
+
       font-weight: bold;
+
+      cursor: pointer;
     }
 
-    .payment button.active {
-      color: #fff;
-      border-color: #a35bff;
-      background: rgba(139,69,255,.18);
-      box-shadow: 0 0 18px rgba(139,69,255,.10);
+    .method.active {
+      border-color: #a855f7;
+
+      background: rgba(139,92,246,.18);
+
+      box-shadow: 0 0 20px rgba(139,92,246,.12);
     }
 
-    /* =========================
-       BOTÃO CONTINUAR
-    ========================= */
-
-    #continue {
+    .continue {
       width: 100%;
-      height: 57px;
-      margin-top: 20px;
+
+      height: 56px;
+
       border: 0;
       border-radius: 14px;
-      cursor: pointer;
-      color: #06110a;
-      background: linear-gradient(90deg, #15d95f, #29ed73);
-      font-size: 15px;
+
+      background:
+        linear-gradient(
+          90deg,
+          #16d95f,
+          #22e66f
+        );
+
+      color: #04100a;
+
+      font-size: 14px;
+
       font-weight: 1000;
-      box-shadow: 0 8px 30px rgba(25,230,107,.14);
+
+      cursor: pointer;
+
+      box-shadow:
+        0 8px 30px rgba(34,230,111,.15);
+
       transition: .2s;
     }
 
-    #continue:hover {
+    .continue:hover {
       transform: translateY(-2px);
-      filter: brightness(1.05);
+
+      box-shadow:
+        0 12px 35px rgba(34,230,111,.25);
     }
 
-    #continue:disabled {
+    .continue:disabled {
       opacity: .5;
       cursor: not-allowed;
       transform: none;
     }
 
     /* =========================
-       SEGURANÇA
+       AVISO
     ========================= */
 
-    .security {
-      margin-top: 15px;
-      padding: 17px;
+    .notice {
+      margin-top: 14px;
+
+      padding: 18px;
+
       border-radius: 14px;
-      background: rgba(104,53,155,.09);
-      border: 1px solid rgba(139,69,255,.15);
-      color: #a9a0b5;
-      font-size: 12px;
-      line-height: 1.65;
-    }
 
-    .security strong {
-      color: #d8c8e8;
-    }
+      border: 1px solid rgba(168,85,247,.15);
 
-    /* =========================
-       MODAL
-    ========================= */
+      background: rgba(10,7,18,.7);
 
-    .modal {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background: rgba(0,0,0,.78);
-      backdrop-filter: blur(8px);
-    }
+      color: #a9a2b6;
 
-    .modal.show {
-      display: flex;
-    }
+      font-size: 11px;
 
-    .modal-box {
-      width: min(450px, 100%);
-      padding: 28px;
-      border-radius: 22px;
-      background: #120d1d;
-      border: 1px solid rgba(173,91,255,.3);
-      box-shadow: 0 25px 90px #000;
-      text-align: center;
-    }
-
-    .modal-icon {
-      font-size: 45px;
-      margin-bottom: 12px;
-    }
-
-    .modal h3 {
-      font-size: 22px;
-      margin-bottom: 10px;
-    }
-
-    .modal p {
-      color: #aaa0b5;
-      font-size: 14px;
       line-height: 1.6;
     }
 
-    .close {
-      width: 100%;
-      height: 45px;
-      margin-top: 20px;
-      border: 0;
-      border-radius: 11px;
-      cursor: pointer;
-      background: #8b45ff;
-      color: white;
+    .notice strong {
+      color: #d8b4fe;
+    }
+
+    /* =========================
+       STATUS
+    ========================= */
+
+    .status {
+      display: none;
+
+      margin-top: 15px;
+
+      padding: 14px;
+
+      border-radius: 12px;
+
+      text-align: center;
+
+      font-size: 13px;
+
       font-weight: bold;
     }
 
-    /* =========================
-       LOADING
-    ========================= */
-
-    .loading {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 15px;
-      color: #bca9ce;
-      font-size: 13px;
+    .status.show {
+      display: block;
     }
 
-    .loading.show {
-      display: flex;
+    .status.error {
+      background: rgba(239,68,68,.12);
+      border: 1px solid rgba(239,68,68,.3);
+      color: #fca5a5;
     }
 
-    .spinner {
-      width: 17px;
-      height: 17px;
-      border: 2px solid #3a294d;
-      border-top-color: #a35cff;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+    .status.loading {
+      background: rgba(139,92,246,.12);
+      border: 1px solid rgba(139,92,246,.3);
+      color: #d8b4fe;
     }
 
     /* =========================
-       FOOTER
+       RODAPÉ
     ========================= */
 
     footer {
-      padding: 0 20px 30px;
+      position: relative;
+      z-index: 2;
+
+      padding: 30px;
+
       text-align: center;
-      color: #61596b;
+
+      color: #686174;
+
       font-size: 11px;
     }
 
     /* =========================
-       MOBILE
+       RESPONSIVO
     ========================= */
 
     @media (max-width: 750px) {
 
       header {
-        height: 62px;
         padding: 0 18px;
       }
 
-      .logo {
-        font-size: 17px;
-      }
-
-      .status {
-        font-size: 10px;
-        padding: 7px 10px;
-      }
-
       .hero {
-        min-height: 390px;
-        padding-top: 70px;
+        min-height: 400px;
+      }
+
+      .hero-image {
+        object-position: center;
       }
 
       .hero h1 {
-        font-size: clamp(39px, 12vw, 62px);
-        letter-spacing: -2px;
+        font-size: 48px;
       }
 
       .hero p {
         font-size: 13px;
-        max-width: 340px;
-      }
-
-      .fighter {
-        opacity: .25;
-        transform: scale(.75);
-      }
-
-      .fighter.left {
-        left: -65px;
-      }
-
-      .fighter.right {
-        right: -65px;
       }
 
       .container {
         width: 94%;
+        margin-top: -30px;
       }
 
-      .shop-panel {
-        padding: 15px;
-        border-radius: 20px;
-      }
-
-      .top-form {
+      .top-fields {
         grid-template-columns: 1fr;
-        gap: 12px;
       }
 
-      #products {
+      .products {
         grid-template-columns: repeat(2, 1fr);
+      }
+
+      .panel {
+        padding: 17px;
+      }
+    }
+
+    @media (max-width: 420px) {
+
+      .products {
+        grid-template-columns: 1fr 1fr;
         gap: 9px;
       }
 
       .product {
         padding: 13px;
-        min-height: 145px;
       }
 
       .diamond-count {
-        font-size: 20px;
-      }
-
-      .choose {
-        font-size: 12px;
-      }
-    }
-
-    @media (max-width: 380px) {
-      #products {
-        grid-template-columns: 1fr;
+        font-size: 19px;
       }
 
       .hero h1 {
-        font-size: 38px;
+        font-size: 40px;
+      }
+
+      .hero {
+        min-height: 370px;
       }
     }
   </style>
@@ -781,147 +725,154 @@
 
 <body>
 
-  <!-- =========================
-       HEADER
-  ========================== -->
+<header>
 
-  <header>
-    <div class="logo">
-      VIBEZ <span>DIAMONDS</span>
+  <div class="logo">
+    VIBEZ <span>DIAMONDS</span>
+  </div>
+
+  <div class="online">
+    <span class="online-dot"></span>
+    Loja online
+  </div>
+
+</header>
+
+
+<!-- =========================
+     BANNER
+========================= -->
+
+<section class="hero">
+
+  <!--
+    COLOQUE A IMAGEM ENVIADA
+    NO MESMO LOCAL DESTE index.html
+  -->
+  <img
+    class="hero-image"
+    src="1000169126.png"
+    alt="Banner VIBEZ DIAMONDS"
+  >
+
+  <div class="hero-glow"></div>
+
+  <div class="hero-content">
+
+    <div class="badge">
+      ⚡ RECARGA RÁPIDA • PAGAMENTO SEGURO
     </div>
 
-    <div class="status">
-      <span class="status-dot"></span>
-      Loja online
-    </div>
-  </header>
+    <h1>
+      COMPRE SEUS
+      <span>DIAMANTES</span>
+    </h1>
+
+    <p>
+      Escolha seu pacote, informe o ID do jogador
+      e continue para o pagamento seguro.
+    </p>
+
+  </div>
+
+</section>
 
 
-  <!-- =========================
-       HERO
-  ========================== -->
+<!-- =========================
+     PAINEL
+========================= -->
 
-  <section class="hero">
+<main class="container">
 
-    <!-- Personagem esquerdo -->
-    <div class="fighter left">
-      <div class="hair"></div>
-      <div class="head"></div>
-      <div class="body"></div>
-      <div class="vest"></div>
-      <div class="arm one"></div>
-      <div class="arm two"></div>
-      <div class="leg one"></div>
-      <div class="leg two"></div>
-      <div class="weapon"></div>
-    </div>
+  <div class="panel">
 
-    <!-- Personagem direito -->
-    <div class="fighter right">
-      <div class="hair"></div>
-      <div class="head"></div>
-      <div class="body"></div>
-      <div class="vest"></div>
-      <div class="arm one"></div>
-      <div class="arm two"></div>
-      <div class="leg one"></div>
-      <div class="leg two"></div>
-      <div class="weapon"></div>
-    </div>
+    <!-- DADOS -->
 
-    <div class="hero-content">
+    <div class="top-fields">
 
-      <div class="hero-badge">
-        ⚡ RECARGA RÁPIDA • PAGAMENTO SEGURO
-      </div>
+      <div class="field">
 
-      <h1>
-        COMPRE SEUS<br>
-        <span>DIAMANTES</span>
-      </h1>
+        <label for="playerId">
+          ID do jogador
+        </label>
 
-      <p>
-        Escolha seu pacote, informe o ID do jogador
-        e continue para o pagamento seguro.
-      </p>
-
-    </div>
-
-  </section>
-
-
-  <!-- =========================
-       LOJA
-  ========================== -->
-
-  <main class="container">
-
-    <div class="shop-panel">
-
-      <div class="top-form">
-
-        <div class="field">
-          <label for="playerId">
-            ID do jogador
-          </label>
-
-          <input
-            id="playerId"
-            type="text"
-            inputmode="numeric"
-            maxlength="15"
-            placeholder="Digite o ID do Free Fire"
-            autocomplete="off"
-          >
-        </div>
-
-
-        <div class="field">
-          <label>
-            Pacote selecionado
-          </label>
-
-          <div
-            id="selectedProduct"
-            class="selected-box"
-          >
-            Nenhum pacote selecionado
-          </div>
-        </div>
+        <input
+          id="playerId"
+          type="text"
+          inputmode="numeric"
+          maxlength="15"
+          placeholder="Digite o ID do Free Fire"
+        >
 
       </div>
 
+
+      <div class="field">
+
+        <label>
+          Pacote selecionado
+        </label>
+
+        <input
+          id="selectedPackage"
+          type="text"
+          readonly
+          value="Nenhum pacote selecionado"
+        >
+
+      </div>
+
+    </div>
+
+
+    <!-- PACOTES -->
+
+    <div class="section-title">
+
+      <h2>
+        💎 Escolha seu pacote
+      </h2>
+
+      <small>
+        Clique no pacote desejado
+      </small>
+
+    </div>
+
+
+    <div
+      id="products"
+      class="products"
+    ></div>
+
+
+    <!-- PAGAMENTO -->
+
+    <div class="payment">
 
       <div class="section-title">
-        <h2>💎 Escolha seu pacote</h2>
 
-        <span>
-          Selecione uma opção
-        </span>
+        <h2>
+          Forma de pagamento
+        </h2>
+
       </div>
 
 
-      <!-- Produtos carregados pelo servidor -->
-      <div id="products"></div>
-
-
-      <!-- Método de pagamento -->
-
-      <div class="payment">
+      <div class="payment-buttons">
 
         <button
+          class="method active"
+          data-method="pix"
           type="button"
-          id="pixBtn"
-          class="active"
-          onclick="selectPayment('pix')"
         >
-          PIX
+          💠 PIX
         </button>
 
         <button
+          class="method"
+          data-method="card"
           type="button"
-          id="cardBtn"
-          onclick="selectPayment('card')"
         >
           💳 Cartão
         </button>
@@ -929,77 +880,373 @@
       </div>
 
 
-      <!-- Continuar -->
-
       <button
-        id="continue"
+        id="continueButton"
+        class="continue"
         type="button"
-        onclick="createOrder()"
+        disabled
       >
         CONTINUAR PARA PAGAMENTO
       </button>
 
 
       <div
-        id="loading"
-        class="loading"
-      >
-        <div class="spinner"></div>
-        Criando checkout seguro...
-      </div>
+        id="status"
+        class="status"
+      ></div>
 
 
-      <!-- Segurança -->
-
-      <div class="security">
+      <div class="notice">
 
         🔒 <strong>Pagamento seguro</strong>
 
         <br><br>
 
         Você será direcionado para uma página
-        segura do <strong>Asaas</strong> para concluir
-        o pagamento.
+        segura do Asaas para concluir o pagamento.
 
         <br><br>
 
         <strong>Importante:</strong>
         criar o Checkout não significa que o pagamento
         foi confirmado. A entrega dos diamantes somente
-        deve ocorrer após a confirmação financeira.
+        deve ocorrer depois da confirmação financeira.
 
       </div>
 
     </div>
 
-  </main>
+  </div>
+
+</main>
 
 
-  <footer>
-    VIBEZ DIAMONDS • Pagamento seguro • © 2026
-  </footer>
+<footer>
+  VIBEZ DIAMONDS • Pagamento seguro • © 2026
+</footer>
 
 
-  <!-- =========================
-       MODAL
-  ========================== -->
+<script>
 
-  <div
-    id="modal"
-    class="modal"
-  >
+  let products = [];
 
-    <div class="modal-box">
+  let selectedProduct = null;
 
-      <div
-        id="modalIcon"
-        class="modal-icon"
-      >
-        ⚠️
-      </div>
+  let paymentMethod = "pix";
 
-      <h3 id="modalTitle">
-        Atenção
-      </h3>
 
-   
+  /* =========================
+     ELEMENTOS
+  ========================= */
+
+  const playerIdInput =
+    document.getElementById("playerId");
+
+  const selectedPackage =
+    document.getElementById("selectedPackage");
+
+  const productsContainer =
+    document.getElementById("products");
+
+  const continueButton =
+    document.getElementById("continueButton");
+
+  const statusBox =
+    document.getElementById("status");
+
+
+  /* =========================
+     STATUS
+  ========================= */
+
+  function showStatus(message, type) {
+
+    statusBox.textContent = message;
+
+    statusBox.className =
+      "status show " + type;
+  }
+
+
+  function hideStatus() {
+
+    statusBox.className = "status";
+    statusBox.textContent = "";
+  }
+
+
+  /* =========================
+     FORMATAR PREÇO
+  ========================= */
+
+  function formatPrice(value) {
+
+    return Number(value).toLocaleString(
+      "pt-BR",
+      {
+        style: "currency",
+        currency: "BRL"
+      }
+    );
+
+  }
+
+
+  /* =========================
+     PACOTES
+  ========================= */
+
+  function renderProducts() {
+
+    productsContainer.innerHTML = "";
+
+    products.forEach(product => {
+
+      const card =
+        document.createElement("div");
+
+      card.className = "product";
+
+      card.dataset.id = product.id;
+
+
+      if (
+        selectedProduct &&
+        selectedProduct.id === product.id
+      ) {
+        card.classList.add("selected");
+      }
+
+
+      card.innerHTML = `
+
+        <div class="diamond">
+          💎
+        </div>
+
+        <div class="diamond-count">
+          ${Number(product.diamonds).toLocaleString("pt-BR")}
+        </div>
+
+        <div class="price">
+          ${formatPrice(product.price)}
+        </div>
+
+        <button type="button">
+          Selecionar
+        </button>
+
+      `;
+
+
+      card.addEventListener(
+        "click",
+        () => {
+
+          selectProduct(product);
+
+        }
+      );
+
+
+      productsContainer.appendChild(card);
+
+    });
+
+  }
+
+
+  function selectProduct(product) {
+
+    selectedProduct = product;
+
+    selectedPackage.value =
+      `${Number(product.diamonds).toLocaleString("pt-BR")} Diamantes — ${formatPrice(product.price)}`;
+
+    continueButton.disabled = false;
+
+    hideStatus();
+
+    renderProducts();
+
+  }
+
+
+  /* =========================
+     PAGAMENTO
+  ========================= */
+
+  document
+    .querySelectorAll(".method")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          document
+            .querySelectorAll(".method")
+            .forEach(item =>
+              item.classList.remove("active")
+            );
+
+          button.classList.add("active");
+
+          paymentMethod =
+            button.dataset.method;
+
+        }
+      );
+
+    });
+
+
+  /* =========================
+     ID
+  ========================= */
+
+  playerIdInput.addEventListener(
+    "input",
+    () => {
+
+      playerIdInput.value =
+        playerIdInput.value.replace(
+          /\D/g,
+          ""
+        );
+
+      hideStatus();
+
+    }
+  );
+
+
+  /* =========================
+     CRIAR PEDIDO
+  ========================= */
+
+  continueButton.addEventListener(
+    "click",
+    async () => {
+
+      hideStatus();
+
+
+      const playerId =
+        playerIdInput.value.trim();
+
+
+      if (!/^\d{5,15}$/.test(playerId)) {
+
+        showStatus(
+          "Digite um ID de jogador válido.",
+          "error"
+        );
+
+        playerIdInput.focus();
+
+        return;
+      }
+
+
+      if (!selectedProduct) {
+
+        showStatus(
+          "Escolha um pacote de diamantes.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      continueButton.disabled = true;
+
+      continueButton.textContent =
+        "CRIANDO PAGAMENTO...";
+
+
+      showStatus(
+        "Preparando seu pagamento seguro...",
+        "loading"
+      );
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/api/orders",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body: JSON.stringify({
+
+                playerId,
+
+                productId:
+                  selectedProduct.id,
+
+                paymentMethod
+
+              })
+
+            }
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok ||
+          !data.ok
+        ) {
+
+          throw new Error(
+            data.error ||
+            "Não foi possível criar o pagamento."
+          );
+
+        }
+
+
+        if (
+          !data.checkout ||
+          !data.checkout.link
+        ) {
+
+          throw new Error(
+            "O Asaas não retornou o link do Checkout."
+          );
+
+        }
+
+
+        showStatus(
+          "Checkout criado. Redirecionando...",
+          "loading"
+        );
+
+
+        /*
+          Abre a página segura do Asaas.
+        */
+
+        window.location.href =
+          data.checkout.link;
+
+
+      } catch (error) {
+
+        console.error(error);
+
+
+        showStatus(
+          error.messag
