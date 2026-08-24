@@ -21,7 +21,6 @@
 :root{
   --bg:#08070d;
   --card:#151221;
-  --card2:#1c172c;
   --purple:#8b5cf6;
   --purple2:#6d28d9;
   --text:#fff;
@@ -31,7 +30,11 @@
 
 body{
   margin:0;
-  font-family:Arial,sans-serif;
+
+  font-family:
+    Arial,
+    sans-serif;
+
   background:
     radial-gradient(
       circle at 50% -10%,
@@ -39,7 +42,9 @@ body{
       #100b19 38%,
       #08070d 70%
     );
+
   color:var(--text);
+
   min-height:100vh;
 }
 
@@ -52,22 +57,43 @@ button{
   cursor:pointer;
 }
 
+/*
+========================================
+HEADER
+========================================
+*/
+
 .header{
-  padding:18px 6%;
+  padding:
+    18px 6%;
+
   display:flex;
+
   align-items:center;
+
   justify-content:space-between;
-  border-bottom:1px solid #ffffff10;
-  background:#09070dcc;
-  backdrop-filter:blur(10px);
+
+  border-bottom:
+    1px solid #ffffff10;
+
+  background:
+    #09070dcc;
+
+  backdrop-filter:
+    blur(10px);
+
   position:sticky;
+
   top:0;
+
   z-index:5;
 }
 
 .logo{
   font-weight:1000;
+
   font-size:25px;
+
   letter-spacing:1px;
 }
 
@@ -77,23 +103,47 @@ button{
 
 .badge{
   font-size:12px;
+
   color:#d8caff;
+
   background:#7c3aed22;
-  border:1px solid #8b5cf655;
-  padding:8px 12px;
+
+  border:
+    1px solid #8b5cf655;
+
+  padding:
+    8px 12px;
+
   border-radius:99px;
 }
 
+/*
+========================================
+HERO
+========================================
+*/
+
 .hero{
   max-width:1050px;
+
   margin:auto;
-  padding:55px 20px 25px;
+
+  padding:
+    55px 20px 25px;
+
   text-align:center;
 }
 
 .hero h1{
-  font-size:clamp(36px,8vw,70px);
-  margin:0 0 10px;
+  font-size:
+    clamp(
+      36px,
+      8vw,
+      70px
+    );
+
+  margin:
+    0 0 10px;
 }
 
 .hero h1 span{
@@ -102,12 +152,21 @@ button{
 
 .hero p{
   color:var(--muted);
+
   font-size:17px;
 }
 
+/*
+========================================
+PAINEL
+========================================
+*/
+
 .wrap{
   max-width:1050px;
+
   margin:auto;
+
   padding:20px;
 }
 
@@ -119,38 +178,57 @@ button{
       #100d18
     );
 
-  border:1px solid var(--line);
+  border:
+    1px solid var(--line);
+
   border-radius:24px;
+
   padding:24px;
 
   box-shadow:
     0 20px 70px #0008;
 }
 
+/*
+========================================
+FORM
+========================================
+*/
+
 .formgrid{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
-}
 
-.formgrid + .formgrid{
-  margin-top:14px;
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:14px;
 }
 
 label{
   display:block;
+
   color:#cfc7dc;
+
   font-size:13px;
-  margin:0 0 7px;
+
+  margin:
+    0 0 7px;
 }
 
 input{
   width:100%;
+
   padding:14px;
-  border:1px solid var(--line);
+
+  border:
+    1px solid var(--line);
+
   background:#0b0911;
+
   color:#fff;
+
   border-radius:13px;
+
   outline:none;
 }
 
@@ -158,127 +236,241 @@ input:focus{
   border-color:#8b5cf6;
 }
 
+#selected{
+  color:#c4b5fd;
+
+  padding:14px 0;
+
+  min-height:48px;
+}
+
+/*
+========================================
+PRODUTOS
+========================================
+*/
+
 .products{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+
+  grid-template-columns:
+    repeat(3,1fr);
+
   gap:14px;
+
   margin-top:16px;
 }
 
 .product{
-  border:1px solid var(--line);
+  border:
+    1px solid var(--line);
+
   background:#120f1d;
+
   border-radius:18px;
+
   padding:18px;
+
   transition:.2s;
 }
 
 .product:hover{
-  transform:translateY(-2px);
-  border-color:#8b5cf677;
+  transform:
+    translateY(-2px);
+
+  border-color:
+    #8b5cf677;
 }
 
 .product.selected{
-  border-color:#9d7aff;
+  border-color:
+    #9d7aff;
+
   box-shadow:
-    0 0 0 1px #9d7aff33;
+    0 0 0 1px #9d7aff33,
+    0 0 25px #7c3aed22;
 }
 
 .diamonds{
   font-size:25px;
+
   font-weight:900;
 }
 
 .price{
   color:#c4b5fd;
-  margin:8px 0 15px;
+
+  margin:
+    8px 0 15px;
 }
 
 .buy{
   width:100%;
+
   border:0;
+
   border-radius:12px;
+
   padding:12px;
+
   background:
     linear-gradient(
       135deg,
       var(--purple),
       var(--purple2)
     );
+
   color:#fff;
+
   font-weight:800;
 }
 
+/*
+========================================
+PAGAMENTO
+========================================
+*/
+
 .payment{
   display:flex;
+
   gap:10px;
+
   margin-top:18px;
+
   flex-wrap:wrap;
 }
 
 .pay{
-  border:1px solid var(--line);
+  border:
+    1px solid var(--line);
+
   background:#0e0b16;
+
   color:#ddd;
-  padding:11px 14px;
+
+  padding:
+    11px 14px;
+
   border-radius:12px;
 }
 
 .pay.active{
-  border-color:#9d7aff;
-  background:#7c3aed22;
+  border-color:
+    #9d7aff;
+
+  background:
+    #7c3aed22;
 }
+
+/*
+========================================
+PEDIDO
+========================================
+*/
 
 .order{
   margin-top:18px;
+
+  display:flex;
+
+  gap:10px;
+
+  align-items:center;
+
+  flex-wrap:wrap;
 }
 
 .order button{
   width:100%;
+
   border:0;
+
   border-radius:13px;
+
   padding:15px 18px;
+
   background:#22c55e;
+
   color:#061108;
+
   font-weight:900;
-  font-size:16px;
+
+  font-size:15px;
 }
 
 .order button:disabled{
   opacity:.6;
+
   cursor:not-allowed;
 }
 
-#selected{
-  color:#c4b5fd;
-  padding:14px 0;
+#result{
+  width:100%;
+
+  text-align:center;
+
+  min-height:22px;
+
+  color:#cfc7dc;
 }
 
-#result{
-  display:block;
-  margin-top:12px;
-  text-align:center;
-  color:#c4b5fd;
-  min-height:20px;
+#result.error{
+  color:#f87171;
 }
+
+#result.success{
+  color:#4ade80;
+}
+
+/*
+========================================
+AVISO
+========================================
+*/
 
 .notice{
   margin-top:20px;
+
   padding:14px;
+
   border-radius:13px;
-  background:#7c3aed12;
-  border:1px solid #8b5cf633;
+
+  background:
+    #7c3aed12;
+
+  border:
+    1px solid #8b5cf633;
+
   color:#cfc7dc;
+
   font-size:13px;
+
   line-height:1.5;
 }
 
+/*
+========================================
+FOOTER
+========================================
+*/
+
 footer{
   text-align:center;
+
   color:#756d83;
-  padding:30px 15px;
+
+  padding:
+    30px 15px;
+
   font-size:12px;
 }
+
+/*
+========================================
+RESPONSIVO
+========================================
+*/
 
 @media(max-width:760px){
 
@@ -287,7 +479,8 @@ footer{
   }
 
   .products{
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:
+      1fr 1fr;
   }
 
 }
@@ -298,8 +491,12 @@ footer{
     grid-template-columns:1fr;
   }
 
-  .header{
-    padding:15px 20px;
+  .hero{
+    padding-top:40px;
+  }
+
+  .panel{
+    padding:18px;
   }
 
 }
@@ -331,7 +528,7 @@ footer{
   </h1>
 
   <p>
-    Escolha o pacote, informe seus dados
+    Escolha o pacote, informe o ID do jogador
     e faça seu pagamento com segurança.
   </p>
 
@@ -341,88 +538,6 @@ footer{
 <main class="wrap">
 
 <section class="panel">
-
-  <!-- DADOS DO CLIENTE -->
-
-  <h3>Dados do comprador</h3>
-
-  <div class="formgrid">
-
-    <div>
-
-      <label for="customerName">
-        Nome completo
-      </label>
-
-      <input
-        id="customerName"
-        autocomplete="name"
-        placeholder="Digite seu nome completo"
-      >
-
-    </div>
-
-
-    <div>
-
-      <label for="customerEmail">
-        E-mail
-      </label>
-
-      <input
-        id="customerEmail"
-        type="email"
-        autocomplete="email"
-        placeholder="seuemail@gmail.com"
-      >
-
-    </div>
-
-  </div>
-
-
-  <div class="formgrid">
-
-    <div>
-
-      <label for="customerCpfCnpj">
-        CPF ou CNPJ
-      </label>
-
-      <input
-        id="customerCpfCnpj"
-        inputmode="numeric"
-        autocomplete="off"
-        placeholder="Somente números"
-      >
-
-    </div>
-
-
-    <div>
-
-      <label for="customerPhone">
-        Celular
-      </label>
-
-      <input
-        id="customerPhone"
-        inputmode="tel"
-        autocomplete="tel"
-        placeholder="(11) 99999-9999"
-      >
-
-    </div>
-
-  </div>
-
-
-  <!-- PEDIDO -->
-
-  <h3 style="margin-top:25px">
-    Dados do pedido
-  </h3>
-
 
   <div class="formgrid">
 
@@ -435,6 +550,8 @@ footer{
       <input
         id="playerId"
         inputmode="numeric"
+        autocomplete="off"
+        maxlength="15"
         placeholder="Digite o ID do Free Fire"
       >
 
@@ -460,13 +577,12 @@ footer{
     Escolha seu pacote
   </h3>
 
+
   <div
     id="products"
     class="products"
   ></div>
 
-
-  <!-- PAGAMENTO -->
 
   <div class="payment">
 
@@ -489,12 +605,10 @@ footer{
   </div>
 
 
-  <!-- BOTÃO -->
-
   <div class="order">
 
     <button
-      id="orderButton"
+      id="continueButton"
       onclick="createOrder()"
     >
       Continuar para pagamento
@@ -507,14 +621,13 @@ footer{
 
   <div class="notice">
 
-    🔒 O pagamento será realizado em uma
-    página segura do Asaas.
+    🔒 O pagamento será realizado
+    em uma página segura do Asaas.
 
     <br><br>
 
-    Seus dados são enviados ao servidor somente
-    para criação do Checkout e preenchimento
-    do pagamento.
+    Você será enviado para o Checkout
+    oficial do Asaas para concluir o pagamento.
 
     <br><br>
 
@@ -522,9 +635,10 @@ footer{
       Importante:
     </strong>
 
-    a confirmação financeira é feita pelo
-    Webhook do Asaas. O sistema não deve liberar
-    os diamantes apenas porque o Checkout foi criado.
+    a criação do Checkout não significa
+    confirmação financeira. A confirmação
+    deve ser feita pelo Asaas antes de qualquer
+    entrega.
 
   </div>
 
@@ -534,9 +648,7 @@ footer{
 
 
 <footer>
-
   VIBEZ DIAMONDS • Pagamento seguro
-
 </footer>
 
 
@@ -547,9 +659,11 @@ let selected = null;
 let payment = "pix";
 
 
-/* =========================
-   FORMATAÇÃO
-========================= */
+/*
+========================================
+FORMATA DINHEIRO
+========================================
+*/
 
 function money(value){
 
@@ -564,9 +678,11 @@ function money(value){
 }
 
 
-/* =========================
-   PAGAMENTO
-========================= */
+/*
+========================================
+FORMA DE PAGAMENTO
+========================================
+*/
 
 function setPay(button){
 
@@ -585,13 +701,16 @@ function setPay(button){
 }
 
 
-/* =========================
-   PRODUTO
-========================= */
+/*
+========================================
+SELECIONAR PRODUTO
+========================================
+*/
 
 function selectProduct(product){
 
-  selected = product;
+  selected =
+    product;
 
   document
     .getElementById("selected")
@@ -602,14 +721,14 @@ function selectProduct(product){
       " diamantes • " +
       money(product.price);
 
+
   document
     .querySelectorAll(".product")
     .forEach(
       x =>
-        x.classList.remove(
-          "selected"
-        )
+        x.classList.remove("selected")
     );
+
 
   const element =
     document.getElementById(
@@ -627,11 +746,18 @@ function selectProduct(product){
 }
 
 
-/* =========================
-   CARREGAR PRODUTOS
-========================= */
+/*
+========================================
+CARREGAR PRODUTOS
+========================================
+*/
 
 async function loadProducts(){
+
+  const container =
+    document.getElementById(
+      "products"
+    );
 
   try{
 
@@ -640,15 +766,22 @@ async function loadProducts(){
         "/api/products"
       );
 
+    if(!response.ok){
+
+      throw new Error(
+        "Não foi possível carregar os produtos."
+      );
+
+    }
+
     const data =
       await response.json();
 
-    document
-      .getElementById("products")
-      .innerHTML =
-        data.products
-          .map(
-            product => `
+
+    container.innerHTML =
+      data.products
+        .map(
+          product => `
 
 <div
   class="product"
@@ -658,9 +791,7 @@ async function loadProducts(){
   <div class="diamonds">
 
     💎
-    ${product.diamonds.toLocaleString(
-      "pt-BR"
-    )}
+    ${product.diamonds.toLocaleString("pt-BR")}
 
   </div>
 
@@ -672,38 +803,41 @@ async function loadProducts(){
 
   <button
     class="buy"
-    onclick='selectProduct(${JSON.stringify(
-      product
-    )})'
+    onclick='selectProduct(${JSON.stringify(product)})'
   >
-
     Selecionar
-
   </button>
 
 </div>
 
 `
-          )
-          .join("");
+        )
+        .join("");
+
 
   }catch(error){
 
-    console.error(error);
-
-    document
-      .getElementById("products")
-      .innerHTML =
-        "<p>Não foi possível carregar os produtos.</p>";
+    container.innerHTML = `
+      <div style="
+        grid-column:1/-1;
+        color:#f87171;
+        text-align:center;
+        padding:20px;
+      ">
+        ${error.message}
+      </div>
+    `;
 
   }
 
 }
 
 
-/* =========================
-   CRIAR PEDIDO
-========================= */
+/*
+========================================
+CRIAR PEDIDO
+========================================
+*/
 
 async function createOrder(){
 
@@ -713,132 +847,78 @@ async function createOrder(){
       .value
       .trim();
 
-
-  const customerName =
-    document
-      .getElementById("customerName")
-      .value
-      .trim();
-
-
-  const customerEmail =
-    document
-      .getElementById("customerEmail")
-      .value
-      .trim();
-
-
-  const customerCpfCnpj =
-    document
-      .getElementById("customerCpfCnpj")
-      .value
-      .replace(/\D/g,"");
-
-
-  const customerPhone =
-    document
-      .getElementById("customerPhone")
-      .value
-      .replace(/\D/g,"");
-
-
   const result =
     document
       .getElementById("result");
 
-
   const button =
     document
-      .getElementById("orderButton");
+      .getElementById(
+        "continueButton"
+      );
 
 
-  /* ---------- validações ---------- */
+  result.className = "";
 
-  if(!customerName){
-
-    result.textContent =
-      "Digite seu nome completo.";
-
-    return;
-
-  }
-
-
-  if(
-    !customerEmail ||
-    !customerEmail.includes("@")
-  ){
-
-    result.textContent =
-      "Digite um e-mail válido.";
-
-    return;
-
-  }
-
-
-  if(
-    customerCpfCnpj.length !== 11 &&
-    customerCpfCnpj.length !== 14
-  ){
-
-    result.textContent =
-      "Digite um CPF ou CNPJ válido.";
-
-    return;
-
-  }
-
-
-  if(
-    customerPhone.length < 10 ||
-    customerPhone.length > 11
-  ){
-
-    result.textContent =
-      "Digite um celular válido.";
-
-    return;
-
-  }
-
+  /*
+  ID
+  */
 
   if(!playerId){
 
     result.textContent =
       "Digite o ID do jogador.";
 
-    return;
+    result.className =
+      "error";
 
+    return;
   }
 
+
+  /*
+  VALIDAÇÃO ID
+  */
 
   if(!/^\d{5,15}$/.test(playerId)){
 
     result.textContent =
       "Digite um ID de jogador válido.";
 
-    return;
+    result.className =
+      "error";
 
+    return;
   }
 
+
+  /*
+  PRODUTO
+  */
 
   if(!selected){
 
     result.textContent =
       "Selecione um pacote.";
 
-    return;
+    result.className =
+      "error";
 
+    return;
   }
 
 
-  /* ---------- enviando ---------- */
+  /*
+  DESABILITA BOTÃO
+  */
 
   button.disabled = true;
 
+  button.textContent =
+    "Criando pagamento...";
+
   result.textContent =
-    "Criando pagamento seguro...";
+    "Aguarde...";
 
 
   try{
@@ -854,26 +934,14 @@ async function createOrder(){
               "application/json"
           },
 
-          body:JSON.stringify({
-
-            playerId,
-
-            productId:
-              selected.id,
-
-            paymentMethod:
-              payment,
-
-            customerName,
-
-            customerEmail,
-
-            customerCpfCnpj,
-
-            customerPhone
-
-          })
-
+          body:
+            JSON.stringify({
+              playerId,
+              productId:
+                selected.id,
+              paymentMethod:
+                payment
+            })
         }
       );
 
@@ -892,53 +960,90 @@ async function createOrder(){
     }
 
 
-    /*
-      O servidor devolveu o link seguro
-      do Checkout Asaas.
-
-      Agora enviamos o cliente diretamente
-      para o Asaas.
-    */
-
     if(
-      data.checkout &&
-      data.checkout.link
+      !data.checkout ||
+      !data.checkout.link
     ){
 
-      result.textContent =
-        "Abrindo pagamento seguro...";
-
-      window.location.href =
-        data.checkout.link;
-
-      return;
+      throw new Error(
+        "O Asaas não retornou o link do pagamento."
+      );
 
     }
 
 
-    throw new Error(
-      "O Asaas não retornou o link do pagamento."
-    );
+    result.textContent =
+      "Pagamento criado. Abrindo Asaas...";
+
+    result.className =
+      "success";
+
+
+    /*
+    ABRIR CHECKOUT ASAAS
+    */
+
+    window.location.href =
+      data.checkout.link;
 
 
   }catch(error){
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     result.textContent =
       error.message ||
       "Não foi possível criar o pagamento.";
 
-    button.disabled = false;
+    result.className =
+      "error";
+
+
+    button.disabled =
+      false;
+
+    button.textContent =
+      "Continuar para pagamento";
 
   }
 
 }
 
 
-/* =========================
-   INICIAR
-========================= */
+/*
+========================================
+SÓ PERMITIR NÚMEROS NO ID
+========================================
+*/
+
+document
+  .getElementById("playerId")
+  .addEventListener(
+    "input",
+    function(){
+
+      this.value =
+        this.value
+          .replace(
+            /\D/g,
+            ""
+          )
+          .slice(
+            0,
+            15
+          );
+
+    }
+  );
+
+
+/*
+========================================
+INICIAR
+========================================
+*/
 
 loadProducts();
 
