@@ -22,7 +22,7 @@ const ASAAS_API_URL =
   process.env.ASAAS_API_URL || "https://api.asaas.com/v3";
 
 const products = [
-  { id: "d100", diamonds: 100, price: 4.99 },
+  { id: "d100", diamonds: 100, price: 5.00 },
   { id: "d310", diamonds: 310, price: 12.99 },
   { id: "d520", diamonds: 520, price: 19.99 },
   { id: "d1060", diamonds: 1060, price: 39.99 },
