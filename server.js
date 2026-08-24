@@ -30,12 +30,12 @@ app.use(express.static(__dirname));
 ===================================================== */
 
 const FAZERCARDS_API_URL = (
-  process.env.FAZERCARDS_API_URL ||
+  process.env.SUPPLIER_API_URL ||
   "https://api.fzr.cards/api/v2"
 ).replace(/\/$/, "");
 
 const FAZERCARDS_API_KEY =
-  process.env.FAZERCARDS_API_KEY || "";
+  process.env.SUPPLIER_API_KEY || "";
 
 const FAZERCARDS_CATEGORY_ID =
   process.env.FAZERCARDS_CATEGORY_ID ||
@@ -80,6 +80,8 @@ const CATALOG_TTL =
 
 const orders = new Map();
 
+const processedEvents = new Set();
+
 
 /* =====================================================
    CONFIGURAÇÃO
@@ -90,7 +92,7 @@ function checkConfig() {
   const missing = [];
 
   if (!FAZERCARDS_API_KEY)
-    missing.push("FAZERCARDS_API_KEY");
+    missing.push("SUPPLIER_API_KEY");
 
   if (!ASAAS_API_KEY)
     missing.push("ASAAS_API_KEY");
@@ -195,7 +197,7 @@ async function fazerCardsRequest(
   if (!FAZERCARDS_API_KEY) {
 
     throw new Error(
-      "FAZERCARDS_API_KEY não configurada."
+      "SUPPLIER_API_KEY não configurada."
     );
 
   }
@@ -214,7 +216,7 @@ async function fazerCardsRequest(
         "content-type":
           "application/json",
 
-        "X-Api-Key":
+        "X-API-Key":
           FAZERCARDS_API_KEY,
 
         ...(options.headers || {})
@@ -331,7 +333,7 @@ function calculateRetailPrice(
 
 
 /* =====================================================
-   CARREGAR PRODUTOS DO FAZERCARDS
+   CARREGAR CATÁLOGO FAZERCARDS
 ===================================================== */
 
 async function loadFazerCardsProducts(
@@ -351,12 +353,6 @@ async function loadFazerCardsProducts(
     return catalogCache;
 
   }
-
-
-  /*
-    Aqui usamos exatamente a categoria
-    Free Fire BR que você encontrou.
-  */
 
   const data =
     await fazerCardsRequest(
@@ -390,11 +386,6 @@ async function loadFazerCardsProducts(
       ? data.fields
       : [];
 
-
-  /*
-    Transformamos as ofertas do fornecedor
-    para o formato que o seu HTML já entende.
-  */
 
   const products =
     offers
@@ -495,31 +486,7 @@ async function loadFazerCardsProducts(
 
 
 /* =====================================================
-   ENCONTRAR CAMPOS DO FREE FIRE
-===================================================== */
-
-function getPlayerFields() {
-
-  const fields =
-    catalogCache.fields || [];
-
-
-  /*
-    O FazerCards informa os nomes dos campos
-    que cada jogo exige.
-
-    Para Free Fire normalmente será algo como
-    player_id, mas não vamos inventar o campo:
-    usamos o que a API realmente devolver.
-  */
-
-  return fields;
-
-}
-
-
-/* =====================================================
-   MONTAR CAMPOS DO PEDIDO
+   CAMPOS DO PEDIDO
 ===================================================== */
 
 function buildTopupFields(
@@ -527,13 +494,13 @@ function buildTopupFields(
 ) {
 
   const fields =
-    getPlayerFields();
+    catalogCache.fields || [];
 
 
   if (!fields.length) {
 
     throw new Error(
-      "O FazerCards não informou os campos necessários para esta categoria."
+      "O FazerCards não informou os campos necessários."
     );
 
   }
@@ -555,16 +522,6 @@ function buildTopupFields(
     if (!key) continue;
 
 
-    /*
-      Para o VIBEZ DIAMONDS,
-      o valor principal será o Player ID.
-
-      Se futuramente o FazerCards exigir
-      servidor/região, o próprio catálogo
-      poderá ser expandido sem alterar
-      a API do fornecedor.
-    */
-
     if (
       key === "player_id" ||
       key === "playerId" ||
@@ -582,12 +539,6 @@ function buildTopupFields(
 
   }
 
-
-  /*
-    Se existe um único campo obrigatório
-    e ainda não conseguimos identificar o nome,
-    usamos esse campo automaticamente.
-  */
 
   if (
     Object.keys(result).length === 0 &&
@@ -619,7 +570,7 @@ function buildTopupFields(
 
 
 /* =====================================================
-   VALIDAR PLAYER ID NO FAZERCARDS
+   VALIDAR PLAYER ID
 ===================================================== */
 
 async function validatePlayerId(
@@ -680,7 +631,7 @@ async function validatePlayerId(
 
 
 /* =====================================================
-   CRIAR TOP-UP NO FAZERCARDS
+   CRIAR PEDIDO FAZERCARDS
 ===================================================== */
 
 async function createFazerCardsOrder(
@@ -712,7 +663,7 @@ async function createFazerCardsOrder(
           JSON.stringify({
 
             category_id:
-              FAZERCARDS_CATEGORY_ID,
+              order.categoryId,
 
             offer_id:
               order.offerId,
@@ -741,7 +692,7 @@ async function createFazerCardsOrder(
 
 
 /* =====================================================
-   CONSULTAR PEDIDO NO FAZERCARDS
+   CONSULTAR PEDIDO FAZERCARDS
 ===================================================== */
 
 async function getFazerCardsOrder(
@@ -761,7 +712,7 @@ async function getFazerCardsOrder(
 
 
 /* =====================================================
-   TENTAR ACOMPANHAR ENTREGA
+   MONITORAR ENTREGA
 ===================================================== */
 
 async function monitorSupplierOrder(
@@ -824,20 +775,16 @@ async function monitorSupplierOrder(
           supplierStatus:
             supplierOrder.status,
 
-          supplierOrder:
-            supplierOrder
+          supplierOrder
 
         }
       );
 
 
       if (
-        status ===
-          "completed" ||
-        status ===
-          "complete" ||
-        status ===
-          "delivered"
+        status === "completed" ||
+        status === "complete" ||
+        status === "delivered"
       ) {
 
         orders.set(
@@ -876,12 +823,9 @@ async function monitorSupplierOrder(
 
 
       if (
-        status ===
-          "failed" ||
-        status ===
-          "refunded" ||
-        status ===
-          "cancelled"
+        status === "failed" ||
+        status === "refunded" ||
+        status === "cancelled"
       ) {
 
         orders.set(
@@ -992,7 +936,7 @@ app.get(
 
 
 /* =====================================================
-   ATUALIZAR CATÁLOGO MANUALMENTE
+   ATUALIZAR CATÁLOGO
 ===================================================== */
 
 app.get(
@@ -1040,7 +984,7 @@ app.get(
 
 
 /* =====================================================
-   CONFIGURAÇÃO DO SITE
+   CONFIGURAÇÃO
 ===================================================== */
 
 app.get(
@@ -1145,11 +1089,6 @@ app.post(
 
       }
 
-
-      /*
-        Antes de cobrar, verificamos o Player ID
-        usando o próprio FazerCards.
-      */
 
       let validation;
 
@@ -1342,4 +1281,111 @@ app.post(
         orderId,
         {
 
-          ...o
+          ...order,
+
+          checkoutId:
+            checkout.id,
+
+          checkoutLink
+
+        }
+      );
+
+
+      res.json({
+
+        ok: true,
+
+        orderId,
+
+        checkout: {
+
+          id:
+            checkout.id,
+
+          link:
+            checkoutLink
+
+        }
+
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao criar pedido:",
+        error
+      );
+
+      res.status(500).json({
+
+        ok: false,
+
+        error:
+          error.message ||
+          "Erro ao criar pagamento."
+
+      });
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   CONSULTAR PEDIDO
+===================================================== */
+
+app.get(
+  "/api/orders/:id",
+  (req, res) => {
+
+    const order =
+      orders.get(
+        req.params.id
+      );
+
+
+    if (!order) {
+
+      return res.status(404).json({
+
+        ok: false,
+
+        error:
+          "Pedido não encontrado."
+
+      });
+
+    }
+
+
+    const safeOrder = {
+      ...order
+    };
+
+
+    delete safeOrder.supplierResponse;
+
+
+    res.json({
+
+      ok: true,
+
+      order:
+        safeOrder
+
+    });
+
+  }
+);
+
+
+/* =====================================================
+   WEBHOOK ASAAS
+===================================================== */
+
+app.post(
+  "/api/webhooks/as
