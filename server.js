@@ -7,6 +7,8 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set("trust proxy", 1);
+
 app.use(
   helmet({
     contentSecurityPolicy: false
@@ -14,10 +16,10 @@ app.use(
 );
 
 app.use(express.json({ limit: "1mb" }));
-
-// Serve os arquivos do projeto
 app.use(express.static(__dirname));
-app.use(express.static(path.join(__dirname, "public")));
+
+const ASAAS_API_URL =
+  process.env.ASAAS_API_URL || "https://api.asaas.com/v3";
 
 const products = [
   { id: "d100", diamonds: 100, price: 4.99 },
@@ -28,70 +30,49 @@ const products = [
   { id: "d5600", diamonds: 5600, price: 199.99 }
 ];
 
-/*
-=========================================================
-CONFIGURAÇÃO ASAAS
-=========================================================
-No Render:
+function asaasConfigured() {
+  return Boolean(process.env.ASAAS_API_KEY);
+}
 
-ASAAS_API_KEY = sua chave do Asaas
-
-Opcional:
-ASAAS_API_URL = https://api.asaas.com/v3
-
-Para produção usamos api.asaas.com.
-Para Sandbox:
-https://api-sandbox.asaas.com/v3
-*/
-
-const ASAAS_API_KEY = process.env.ASAAS_API_KEY;
-
-const ASAAS_API_URL =
-  process.env.ASAAS_API_URL || "https://api.asaas.com/v3";
-
-/*
-=========================================================
-FUNÇÃO PARA CHAMAR O ASAAS
-=========================================================
-*/
+function getBaseUrl(req) {
+  return (
+    process.env.PUBLIC_URL ||
+    `${req.protocol}://${req.get("host")}`
+  ).replace(/\/$/, "");
+}
 
 async function asaasRequest(endpoint, options = {}) {
-  if (!ASAAS_API_KEY) {
+  if (!process.env.ASAAS_API_KEY) {
     throw new Error("ASAAS_API_KEY não configurada no Render.");
   }
 
   const response = await fetch(`${ASAAS_API_URL}${endpoint}`, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
-      "User-Agent": "VIBEZ-DIAMONDS/1.0 Node.js",
-      "access_token": ASAAS_API_KEY,
+      accept: "application/json",
+      "content-type": "application/json",
+      access_token: process.env.ASAAS_API_KEY,
       ...(options.headers || {})
     }
   });
 
   const text = await response.text();
 
-  let data;
+  let data = {};
 
   try {
     data = text ? JSON.parse(text) : {};
   } catch {
-    data = {
-      raw: text
-    };
+    data = { raw: text };
   }
 
   if (!response.ok) {
-    console.error("Erro retornado pelo Asaas:", {
-      status: response.status,
-      data
-    });
+    console.error("Erro Asaas:", response.status, data);
 
     const message =
-      data?.errors?.map?.(e => e.description).join("; ") ||
+      data?.errors?.map?.(e => e.description).join(" ") ||
       data?.message ||
-      "Erro na API do Asaas.";
+      "Erro retornado pelo Asaas.";
 
     throw new Error(message);
   }
@@ -99,62 +80,32 @@ async function asaasRequest(endpoint, options = {}) {
   return data;
 }
 
-/*
-=========================================================
-CONFIG
-=========================================================
-*/
+/* =========================
+   CONFIGURAÇÃO
+========================= */
 
 app.get("/api/config", (_, res) => {
   res.json({
     storeName: process.env.STORE_NAME || "VIBEZ DIAMONDS",
-
+    asaasConfigured: asaasConfigured(),
     supplierConfigured: Boolean(
       process.env.SUPPLIER_API_URL &&
       process.env.SUPPLIER_API_KEY
-    ),
-
-    asaasConfigured: Boolean(ASAAS_API_KEY)
+    )
   });
 });
 
-/*
-=========================================================
-PRODUTOS
-=========================================================
-*/
+/* =========================
+   PRODUTOS
+========================= */
 
 app.get("/api/products", (_, res) => {
-  res.json({
-    products
-  });
+  res.json({ products });
 });
 
-/*
-=========================================================
-CRIAR CLIENTE NO ASAAS
-=========================================================
-*/
-
-async function createAsaasCustomer(playerId) {
-  const customer = await asaasRequest("/customers", {
-    method: "POST",
-
-    body: JSON.stringify({
-      name: `Cliente VIBEZ - ${playerId}`,
-      externalReference: `VZ-PLAYER-${playerId}`,
-      notificationDisabled: true
-    })
-  });
-
-  return customer;
-}
-
-/*
-=========================================================
-CRIAR PEDIDO
-=========================================================
-*/
+/* =========================
+   CRIAR PEDIDO + CHECKOUT ASAAS
+========================= */
 
 app.post("/api/orders", async (req, res) => {
   try {
@@ -164,12 +115,6 @@ app.post("/api/orders", async (req, res) => {
       paymentMethod
     } = req.body;
 
-    /*
-    -----------------------------------------------
-    VALIDAÇÃO
-    -----------------------------------------------
-    */
-
     if (!playerId || !productId || !paymentMethod) {
       return res.status(400).json({
         error: "Preencha todos os dados."
@@ -178,17 +123,11 @@ app.post("/api/orders", async (req, res) => {
 
     const cleanPlayerId = String(playerId).trim();
 
-    if (cleanPlayerId.length < 3 || cleanPlayerId.length > 30) {
+    if (!/^\d{5,15}$/.test(cleanPlayerId)) {
       return res.status(400).json({
-        error: "ID do jogador inválido."
+        error: "Digite um ID de jogador válido."
       });
     }
-
-    /*
-    -----------------------------------------------
-    PRODUTO
-    -----------------------------------------------
-    */
 
     const product = products.find(
       p => p.id === productId
@@ -200,278 +139,370 @@ app.post("/api/orders", async (req, res) => {
       });
     }
 
-    /*
-    -----------------------------------------------
-    FORMA DE PAGAMENTO
-    -----------------------------------------------
-    */
-
-    let billingType;
-
-    if (
-      paymentMethod === "pix" ||
-      paymentMethod === "PIX"
-    ) {
-      billingType = "PIX";
-    } else if (
-      paymentMethod === "card" ||
-      paymentMethod === "credit_card" ||
-      paymentMethod === "CREDIT_CARD"
-    ) {
-      billingType = "CREDIT_CARD";
-    } else {
+    if (!["pix", "card"].includes(paymentMethod)) {
       return res.status(400).json({
         error: "Forma de pagamento inválida."
       });
     }
 
-    /*
-    -----------------------------------------------
-    ID DO PEDIDO
-    -----------------------------------------------
-    */
+    if (!asaasConfigured()) {
+      return res.status(500).json({
+        error:
+          "O pagamento ainda não está configurado no servidor."
+      });
+    }
 
+    /*
+      ID interno do pedido.
+
+      O ID do jogador é colocado apenas como referência
+      do pedido. Não é enviado como dado financeiro.
+    */
     const orderId =
       "VZ-" +
-      Date.now()
-        .toString(36)
-        .toUpperCase();
+      Date.now().toString(36).toUpperCase();
 
-    console.log("=================================");
-    console.log("NOVO PEDIDO");
-    console.log("Pedido:", orderId);
-    console.log("Jogador:", cleanPlayerId);
-    console.log("Produto:", product.diamonds, "diamantes");
-    console.log("Valor:", product.price);
-    console.log("Pagamento:", billingType);
-    console.log("=================================");
+    const billingTypes =
+      paymentMethod === "pix"
+        ? ["PIX"]
+        : ["CREDIT_CARD"];
 
-    /*
-    -----------------------------------------------
-    CRIA CLIENTE NO ASAAS
-    -----------------------------------------------
-    */
+    const baseUrl = getBaseUrl(req);
 
-    const customer =
-      await createAsaasCustomer(cleanPlayerId);
-
-    console.log(
-      "Cliente Asaas criado:",
-      customer.id
-    );
-
-    /*
-    -----------------------------------------------
-    DATA DE VENCIMENTO
-    -----------------------------------------------
-    */
-
-    const tomorrow = new Date();
-
-    tomorrow.setDate(
-      tomorrow.getDate() + 1
-    );
-
-    const dueDate =
-      tomorrow.toISOString().split("T")[0];
-
-    /*
-    -----------------------------------------------
-    CRIA COBRANÇA ASAAS
-    -----------------------------------------------
-    */
-
-    const payment =
-      await asaasRequest("/payments", {
+    const checkout = await asaasRequest(
+      "/checkouts",
+      {
         method: "POST",
-
         body: JSON.stringify({
-          customer: customer.id,
+          billingTypes,
+          chargeTypes: ["DETACHED"],
+          minutesToExpire: 60,
 
-          billingType,
+          externalReference:
+            `${orderId}|PLAYER:${cleanPlayerId}|PRODUCT:${product.id}`,
 
-          value: Number(
-            product.price.toFixed(2)
-          ),
+          callback: {
+            successUrl:
+              `${baseUrl}/pagamento/sucesso?pedido=${encodeURIComponent(orderId)}`,
 
-          dueDate,
+            cancelUrl:
+              `${baseUrl}/pagamento/cancelado?pedido=${encodeURIComponent(orderId)}`,
 
-          description:
-            `${product.diamonds} diamantes - VIBEZ DIAMONDS`,
+            expiredUrl:
+              `${baseUrl}/pagamento/expirado?pedido=${encodeURIComponent(orderId)}`
+          },
 
-          externalReference: orderId
+          items: [
+            {
+              externalReference: product.id,
+              name:
+                `${product.diamonds.toLocaleString("pt-BR")} Diamantes`,
+              description:
+                `Pedido VIBEZ DIAMONDS - ID ${cleanPlayerId}`,
+              quantity: 1,
+              value: product.price
+            }
+          ]
         })
-      });
-
-    console.log(
-      "Cobrança Asaas criada:",
-      payment.id
+      }
     );
 
-    /*
-    -----------------------------------------------
-    RESULTADO BASE
-    -----------------------------------------------
-    */
+    console.log(
+      "Checkout Asaas criado:",
+      checkout.id,
+      "Pedido:",
+      orderId
+    );
 
-    const result = {
+    res.json({
       ok: true,
 
       order: {
         id: orderId,
-
         playerId: cleanPlayerId,
-
         productId: product.id,
-
         diamonds: product.diamonds,
-
         price: product.price,
-
         paymentMethod,
-
         status: "waiting_payment"
       },
 
-      asaas: {
-        customerId: customer.id,
-
-        paymentId: payment.id,
-
-        status: payment.status,
-
-        invoiceUrl:
-          payment.invoiceUrl || null,
-
-        bankSlipUrl:
-          payment.bankSlipUrl || null
+      checkout: {
+        id: checkout.id,
+        link: checkout.link,
+        status: checkout.status
       }
-    };
-
-    /*
-    -----------------------------------------------
-    PIX
-    -----------------------------------------------
-    */
-
-    if (billingType === "PIX") {
-      try {
-        const pix =
-          await asaasRequest(
-            `/payments/${payment.id}/pixQrCode`,
-            {
-              method: "GET"
-            }
-          );
-
-        result.asaas.pix = {
-          encodedImage:
-            pix.encodedImage || null,
-
-          payload:
-            pix.payload || null,
-
-          expirationDate:
-            pix.expirationDate || null
-        };
-
-        console.log(
-          "QR Code Pix gerado."
-        );
-
-      } catch (pixError) {
-        console.error(
-          "Cobrança criada, mas não foi possível obter o Pix:",
-          pixError.message
-        );
-
-        result.asaas.pixError =
-          "Não foi possível gerar o QR Code Pix.";
-      }
-    }
-
-    /*
-    -----------------------------------------------
-    RESPOSTA
-    -----------------------------------------------
-    */
-
-    return res.json(result);
+    });
 
   } catch (err) {
-    console.error(
-      "Erro ao criar pedido:",
-      err
-    );
+    console.error("Erro ao criar pedido:", err);
 
-    return res.status(500).json({
-      ok: false,
+    res.status(500).json({
       error:
         err.message ||
-        "Erro ao criar cobrança no Asaas."
+        "Não foi possível criar o pagamento."
     });
   }
 });
 
-/*
-=========================================================
-CONSULTAR PAGAMENTO
-=========================================================
-*/
+/* =========================
+   PÁGINAS DE RETORNO
+========================= */
 
-app.get(
-  "/api/payments/:paymentId",
-  async (req, res) => {
-    try {
-      const payment =
-        await asaasRequest(
-          `/payments/${encodeURIComponent(
-            req.params.paymentId
-          )}`,
-          {
-            method: "GET"
-          }
-        );
+app.get("/pagamento/sucesso", (req, res) => {
+  const pedido = req.query.pedido || "";
 
-      res.json({
-        ok: true,
-        payment
-      });
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport"
+            content="width=device-width,initial-scale=1">
+      <title>Pagamento realizado</title>
 
-    } catch (err) {
-      console.error(err);
+      <style>
+        body{
+          margin:0;
+          min-height:100vh;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          background:#08070d;
+          color:white;
+          font-family:Arial,sans-serif;
+        }
 
-      res.status(500).json({
-        ok: false,
-        error:
-          err.message ||
-          "Erro ao consultar pagamento."
-      });
-    }
-  }
-);
+        .box{
+          width:min(90%,500px);
+          padding:35px;
+          text-align:center;
+          border-radius:24px;
+          background:#151221;
+          border:1px solid #2b2440;
+        }
 
-/*
-=========================================================
-PÁGINA PRINCIPAL
-=========================================================
-*/
+        .icon{
+          font-size:60px;
+        }
+
+        h1{
+          color:#22c55e;
+        }
+
+        p{
+          color:#aaa3b8;
+          line-height:1.6;
+        }
+
+        a{
+          display:inline-block;
+          margin-top:20px;
+          padding:14px 20px;
+          border-radius:12px;
+          background:#8b5cf6;
+          color:white;
+          text-decoration:none;
+          font-weight:bold;
+        }
+
+        .order{
+          color:#c4b5fd;
+        }
+      </style>
+    </head>
+
+    <body>
+      <div class="box">
+        <div class="icon">✅</div>
+
+        <h1>Pagamento recebido</h1>
+
+        <p>
+          Seu pagamento foi encaminhado para processamento.
+        </p>
+
+        <p class="order">
+          Pedido: ${String(pedido)
+            .replace(/[<>]/g, "")}
+        </p>
+
+        <p>
+          A entrega dos diamantes deverá ocorrer somente
+          após a confirmação do pagamento e da integração
+          autorizada com o fornecedor.
+        </p>
+
+        <a href="/">
+          Voltar para a VIBEZ DIAMONDS
+        </a>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+app.get("/pagamento/cancelado", (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport"
+            content="width=device-width,initial-scale=1">
+      <title>Pagamento cancelado</title>
+
+      <style>
+        body{
+          margin:0;
+          min-height:100vh;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          background:#08070d;
+          color:white;
+          font-family:Arial,sans-serif;
+        }
+
+        .box{
+          width:min(90%,500px);
+          padding:35px;
+          text-align:center;
+          border-radius:24px;
+          background:#151221;
+          border:1px solid #2b2440;
+        }
+
+        .icon{
+          font-size:60px;
+        }
+
+        h1{
+          color:#f59e0b;
+        }
+
+        p{
+          color:#aaa3b8;
+          line-height:1.6;
+        }
+
+        a{
+          display:inline-block;
+          margin-top:20px;
+          padding:14px 20px;
+          border-radius:12px;
+          background:#8b5cf6;
+          color:white;
+          text-decoration:none;
+          font-weight:bold;
+        }
+      </style>
+    </head>
+
+    <body>
+      <div class="box">
+        <div class="icon">⚠️</div>
+
+        <h1>Pagamento cancelado</h1>
+
+        <p>
+          O pagamento não foi concluído.
+        </p>
+
+        <a href="/">
+          Tentar novamente
+        </a>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+app.get("/pagamento/expirado", (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport"
+            content="width=device-width,initial-scale=1">
+      <title>Pagamento expirado</title>
+
+      <style>
+        body{
+          margin:0;
+          min-height:100vh;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          background:#08070d;
+          color:white;
+          font-family:Arial,sans-serif;
+        }
+
+        .box{
+          width:min(90%,500px);
+          padding:35px;
+          text-align:center;
+          border-radius:24px;
+          background:#151221;
+          border:1px solid #2b2440;
+        }
+
+        .icon{
+          font-size:60px;
+        }
+
+        h1{
+          color:#ef4444;
+        }
+
+        p{
+          color:#aaa3b8;
+          line-height:1.6;
+        }
+
+        a{
+          display:inline-block;
+          margin-top:20px;
+          padding:14px 20px;
+          border-radius:12px;
+          background:#8b5cf6;
+          color:white;
+          text-decoration:none;
+          font-weight:bold;
+        }
+      </style>
+    </head>
+
+    <body>
+      <div class="box">
+        <div class="icon">⏰</div>
+
+        <h1>Checkout expirado</h1>
+
+        <p>
+          O prazo do pagamento terminou.
+        </p>
+
+        <a href="/">
+          Criar novo pedido
+        </a>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+/* =========================
+   FRONTEND
+========================= */
 
 app.get("*", (_, res) => {
   res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "index.html"
-    )
+    path.join(__dirname, "public", "index.html")
   );
 });
-
-/*
-=========================================================
-SERVIDOR
-=========================================================
-*/
 
 app.listen(PORT, () => {
   console.log(
@@ -479,12 +510,10 @@ app.listen(PORT, () => {
   );
 
   console.log(
-    "Asaas configurado:",
-    Boolean(ASAAS_API_KEY)
+    `Asaas configurado: ${asaasConfigured()}`
   );
 
   console.log(
-    "URL Asaas:",
-    ASAAS_API_URL
+    `URL Asaas: ${ASAAS_API_URL}`
   );
 });
