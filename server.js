@@ -1,4 +1,3 @@
-server.js — VIBEZ DIAMONDS compacto
 
 require("dotenv").config();
 const express=require("express"),helmet=require("helmet"),crypto=require("crypto");
