@@ -1,170 +1,13 @@
+require("dotenv").config();
+
 const express = require("express");
 const helmet = require("helmet");
-const crypto = require("crypto");
 const path = require("path");
-
-// dotenv é opcional.
-// No Render, as variáveis ficam disponíveis diretamente em process.env.
-try {
-  require("dotenv").config();
-} catch (_) {}
+const crypto = require("crypto");
 
 const app = express();
 
 const PORT = process.env.PORT || 3000;
-
-// ======================================================
-// CONFIGURAÇÕES
-// ======================================================
-
-const STORE_NAME =
-  process.env.STORE_NAME || "VIBEZ DIAMONDS";
-
-// FreeFire Shop
-const FREEFIRE_API_URL = (
-  process.env.FREEFIRE_API_URL ||
-  "https://freefireshop.com.br"
-).replace(/\/$/, "");
-
-const FREEFIRE_USER_ID =
-  process.env.FREEFIRE_USER_ID || "";
-
-const FREEFIRE_API_KEY =
-  process.env.FREEFIRE_API_KEY || "";
-
-// Asaas
-const ASAAS_API_URL = (
-  process.env.ASAAS_API_URL ||
-  "https://api.asaas.com/v3"
-).replace(/\/$/, "");
-
-const ASAAS_API_KEY =
-  process.env.ASAAS_API_KEY || "";
-
-// URL pública do Render
-const PUBLIC_URL = (
-  process.env.PUBLIC_URL || ""
-).replace(/\/$/, "");
-
-// Token usado para proteger o webhook do Asaas
-const WEBHOOK_AUTH_TOKEN =
-  process.env.ASAAS_WEBHOOK_AUTH_TOKEN || "";
-
-// Chave interna para criptografar os dados do pedido
-const ORDER_SECRET =
-  process.env.ORDER_SECRET || "";
-
-
-// ======================================================
-// PRODUTOS
-// ======================================================
-
-const products = {
-
-  d200: {
-    id: "d200",
-    type: "diamonds",
-    name: "200 Diamantes",
-    amount: "200",
-    price: 10.90,
-    requires: "accessToken"
-  },
-
-  d620: {
-    id: "d620",
-    type: "diamonds",
-    name: "620 Diamantes",
-    amount: "620",
-    price: 24.90,
-    requires: "accessToken"
-  },
-
-  d1040: {
-    id: "d1040",
-    type: "diamonds",
-    name: "1.040 Diamantes",
-    amount: "1040",
-    price: 34.90,
-    requires: "accessToken"
-  },
-
-  d2120: {
-    id: "d2120",
-    type: "diamonds",
-    name: "2.120 Diamantes",
-    amount: "2120",
-    price: 64.90,
-    requires: "accessToken"
-  },
-
-  d4360: {
-    id: "d4360",
-    type: "diamonds",
-    name: "4.360 Diamantes",
-    amount: "4360",
-    price: 119.90,
-    requires: "accessToken"
-  },
-
-  d5300: {
-    id: "d5300",
-    type: "diamonds",
-    name: "5.300 Diamantes",
-    amount: "5300",
-    price: 139.90,
-    requires: "accessToken"
-  },
-
-  d11200: {
-    id: "d11200",
-    type: "diamonds",
-    name: "11.200 Diamantes",
-    amount: "11200",
-    price: 279.90,
-    requires: "accessToken"
-  },
-
-  d22400: {
-    id: "d22400",
-    type: "diamonds",
-    name: "22.400 Diamantes",
-    amount: "22400",
-    price: 529.90,
-    requires: "accessToken"
-  },
-
-  token: {
-    id: "token",
-    type: "token",
-    name: "Token (Caixa Universal)",
-    quantity: 1,
-    price: 4.90,
-    requires: "playerId"
-  },
-
-  pass: {
-    id: "pass",
-    type: "pass",
-    name: "Passe Booyah",
-    price: 6.90,
-    requires: "playerId"
-  }
-};
-
-
-// ======================================================
-// ARMAZENAMENTO TEMPORÁRIO DOS PEDIDOS
-// ======================================================
-
-const orders = new Map();
-
-// Evita processar o mesmo webhook duas vezes
-const processedEvents = new Set();
-
-
-// ======================================================
-// EXPRESS
-// ======================================================
 
 app.set("trust proxy", 1);
 
@@ -180,159 +23,165 @@ app.use(
   })
 );
 
+app.use(express.static(__dirname));
 
-// ======================================================
-// FUNÇÕES AUXILIARES
-// ======================================================
+/* =====================================================
+   CONFIGURAÇÕES
+===================================================== */
 
-function configured() {
+const SUPPLIER_API_URL = (
+  process.env.SUPPLIER_API_URL || ""
+).replace(/\/$/, "");
+
+const SUPPLIER_USER_ID =
+  process.env.SUPPLIER_USER_ID || "";
+
+const SUPPLIER_API_KEY =
+  process.env.SUPPLIER_API_KEY || "";
+
+const ASAAS_API_URL = (
+  process.env.ASAAS_API_URL ||
+  "https://api.asaas.com/v3"
+).replace(/\/$/, "");
+
+const ASAAS_API_KEY =
+  process.env.ASAAS_API_KEY || "";
+
+const APP_URL = (
+  process.env.APP_URL || ""
+).replace(/\/$/, "");
+
+
+/* =====================================================
+   PRODUTOS
+===================================================== */
+
+const products = [
+  {
+    id: "d200",
+    type: "diamonds",
+    name: "200 Diamantes",
+    amount: 200,
+    price: 10.90,
+    requires: "accessToken"
+  },
+  {
+    id: "d620",
+    type: "diamonds",
+    name: "620 Diamantes",
+    amount: 620,
+    price: 24.90,
+    requires: "accessToken"
+  },
+  {
+    id: "d1040",
+    type: "diamonds",
+    name: "1.040 Diamantes",
+    amount: 1040,
+    price: 34.90,
+    requires: "accessToken"
+  },
+  {
+    id: "d2120",
+    type: "diamonds",
+    name: "2.120 Diamantes",
+    amount: 2120,
+    price: 64.90,
+    requires: "accessToken"
+  },
+  {
+    id: "d4360",
+    type: "diamonds",
+    name: "4.360 Diamantes",
+    amount: 4360,
+    price: 119.90,
+    requires: "accessToken"
+  },
+  {
+    id: "d5300",
+    type: "diamonds",
+    name: "5.300 Diamantes",
+    amount: 5300,
+    price: 139.90,
+    requires: "accessToken"
+  },
+  {
+    id: "token",
+    type: "token",
+    name: "Token",
+    quantity: 1,
+    price: 4.90,
+    requires: "playerId"
+  },
+  {
+    id: "pass",
+    type: "pass",
+    name: "Passe Booyah",
+    price: 6.90,
+    requires: "playerId"
+  }
+];
+
+
+/* =====================================================
+   PEDIDOS
+===================================================== */
+
+/*
+  IMPORTANTE:
+  Este armazenamento é temporário.
+  Para produção, depois vamos colocar PostgreSQL
+  para os pedidos não desaparecerem quando o Render
+  reiniciar o serviço.
+*/
+
+const orders = new Map();
+
+const processedEvents = new Set();
+
+
+/* =====================================================
+   CONFIGURAÇÃO
+===================================================== */
+
+function checkConfig() {
 
   const missing = [];
 
-  if (!FREEFIRE_USER_ID) {
-    missing.push("FREEFIRE_USER_ID");
-  }
+  if (!SUPPLIER_API_URL)
+    missing.push("SUPPLIER_API_URL");
 
-  if (!FREEFIRE_API_KEY) {
-    missing.push("FREEFIRE_API_KEY");
-  }
+  if (!SUPPLIER_USER_ID)
+    missing.push("SUPPLIER_USER_ID");
 
-  if (!ASAAS_API_KEY) {
+  if (!SUPPLIER_API_KEY)
+    missing.push("SUPPLIER_API_KEY");
+
+  if (!ASAAS_API_KEY)
     missing.push("ASAAS_API_KEY");
-  }
 
-  if (
-    !ORDER_SECRET ||
-    ORDER_SECRET.length < 32
-  ) {
-    missing.push(
-      "ORDER_SECRET (mínimo 32 caracteres)"
-    );
-  }
+  if (!APP_URL)
+    missing.push("APP_URL");
 
   if (missing.length) {
+
     throw new Error(
-      "Configure no Render: " +
+      "Variáveis ausentes no Render: " +
       missing.join(", ")
     );
-  }
-}
 
-
-function baseUrl(req) {
-
-  return (
-    PUBLIC_URL ||
-    `${req.protocol}://${req.get("host")}`
-  );
-
-}
-
-
-function safeEqual(a, b) {
-
-  if (!a || !b) {
-    return false;
   }
 
-  const aa = Buffer.from(String(a));
-  const bb = Buffer.from(String(b));
-
-  return (
-    aa.length === bb.length &&
-    crypto.timingSafeEqual(aa, bb)
-  );
-
 }
 
 
-// ======================================================
-// CRIPTOGRAFIA DO PEDIDO
-// ======================================================
-
-function encrypt(value) {
-
-  const key =
-    crypto
-      .createHash("sha256")
-      .update(ORDER_SECRET)
-      .digest();
-
-  const iv =
-    crypto.randomBytes(12);
-
-  const cipher =
-    crypto.createCipheriv(
-      "aes-256-gcm",
-      key,
-      iv
-    );
-
-  const ciphertext =
-    Buffer.concat([
-      cipher.update(value, "utf8"),
-      cipher.final()
-    ]);
-
-  const tag =
-    cipher.getAuthTag();
-
-  return Buffer.concat([
-    iv,
-    tag,
-    ciphertext
-  ]).toString("base64url");
-
-}
-
-
-function decrypt(value) {
-
-  const key =
-    crypto
-      .createHash("sha256")
-      .update(ORDER_SECRET)
-      .digest();
-
-  const raw =
-    Buffer.from(
-      value,
-      "base64url"
-    );
-
-  const iv =
-    raw.subarray(0, 12);
-
-  const tag =
-    raw.subarray(12, 28);
-
-  const ciphertext =
-    raw.subarray(28);
-
-  const decipher =
-    crypto.createDecipheriv(
-      "aes-256-gcm",
-      key,
-      iv
-    );
-
-  decipher.setAuthTag(tag);
-
-  return Buffer.concat([
-    decipher.update(ciphertext),
-    decipher.final()
-  ]).toString("utf8");
-
-}
-
-
-// ======================================================
-// REQUEST JSON
-// ======================================================
+/* =====================================================
+   REQUEST JSON
+===================================================== */
 
 async function requestJson(
   url,
-  options
+  options = {}
 ) {
 
   const response =
@@ -344,7 +193,7 @@ async function requestJson(
   const text =
     await response.text();
 
-  let data;
+  let data = {};
 
   try {
 
@@ -353,7 +202,7 @@ async function requestJson(
         ? JSON.parse(text)
         : {};
 
-  } catch (_) {
+  } catch {
 
     data = {
       raw: text
@@ -361,78 +210,36 @@ async function requestJson(
 
   }
 
-
   if (!response.ok) {
 
-    let detail =
+    const message =
       data?.errors
         ?.map?.(
-          e => e.description
+          error =>
+            error.description
         )
-        .join(" ");
+        .join(" ") ||
 
-    detail =
-      detail ||
-      data?.error ||
       data?.message ||
+
+      data?.error ||
+
       `HTTP ${response.status}`;
 
-    throw new Error(detail);
+    throw new Error(message);
 
   }
-
 
   return data;
 
 }
 
 
-// ======================================================
-// FREEFIRE SHOP
-// ======================================================
+/* =====================================================
+   ASAAS
+===================================================== */
 
-async function freeFire(
-  endpoint,
-  body
-) {
-
-  configured();
-
-  return requestJson(
-    `${FREEFIRE_API_URL}${endpoint}`,
-    {
-      method: "POST",
-
-      headers: {
-        "Content-Type":
-          "application/json",
-
-        "Accept":
-          "application/json"
-      },
-
-      body: JSON.stringify({
-
-        userId:
-          FREEFIRE_USER_ID,
-
-        key:
-          FREEFIRE_API_KEY,
-
-        ...body
-
-      })
-    }
-  );
-
-}
-
-
-// ======================================================
-// ASAAS
-// ======================================================
-
-async function asaas(
+async function asaasRequest(
   endpoint,
   body
 ) {
@@ -448,17 +255,18 @@ async function asaas(
   return requestJson(
     `${ASAAS_API_URL}${endpoint}`,
     {
+
       method: "POST",
 
       headers: {
 
-        "Content-Type":
+        accept:
           "application/json",
 
-        "Accept":
+        "content-type":
           "application/json",
 
-        "access_token":
+        access_token:
           ASAAS_API_KEY
 
       },
@@ -472,282 +280,74 @@ async function asaas(
 }
 
 
-// ======================================================
-// ENTREGA AUTOMÁTICA
-// ======================================================
+/* =====================================================
+   FREE FIRE SHOP
+===================================================== */
 
-async function deliver(order) {
+async function supplierRequest(
+  endpoint,
+  body
+) {
 
-  if (!order) {
-    return order;
-  }
+  checkConfig();
 
-  if (order.status !== "paid") {
-    return order;
-  }
-
-  if (
-    order.deliveryStatus ===
-    "delivered"
-  ) {
-    return order;
-  }
-
-
-  orders.set(
-    order.id,
+  return requestJson(
+    `${SUPPLIER_API_URL}${endpoint}`,
     {
-      ...order,
 
-      deliveryStatus:
-        "processing",
+      method: "POST",
 
-      updatedAt:
-        new Date().toISOString()
+      headers: {
+
+        accept:
+          "application/json",
+
+        "content-type":
+          "application/json"
+
+      },
+
+      body:
+        JSON.stringify({
+
+          userId:
+            SUPPLIER_USER_ID,
+
+          key:
+            SUPPLIER_API_KEY,
+
+          ...body
+
+        })
+
     }
   );
 
-
-  try {
-
-    let result;
-
-
-    // ----------------------------------------------
-    // DIAMANTES
-    // ----------------------------------------------
-
-    if (
-      order.type ===
-      "diamonds"
-    ) {
-
-      result =
-        await freeFire(
-          "/api/v1/diamonds/send",
-          {
-
-            accessToken:
-              order.accessToken,
-
-            diamondAmount:
-              order.amount
-
-          }
-        );
-
-    }
-
-
-    // ----------------------------------------------
-    // TOKEN
-    // ----------------------------------------------
-
-    else if (
-      order.type ===
-      "token"
-    ) {
-
-      result =
-        await freeFire(
-          "/api/v1/tokens/send",
-          {
-
-            playerID:
-              order.playerId,
-
-            quantity:
-              Number(
-                order.quantity || 1
-              ),
-
-            mensagem:
-              `Pedido ${order.id}`
-
-          }
-        );
-
-    }
-
-
-    // ----------------------------------------------
-    // PASSE BOOYAH
-    // ----------------------------------------------
-
-    else if (
-      order.type ===
-      "pass"
-    ) {
-
-      result =
-        await freeFire(
-          "/api/v1/pass/send",
-          {
-
-            uid:
-              order.playerId
-
-          }
-        );
-
-    }
-
-
-    else {
-
-      throw new Error(
-        "Tipo de produto inválido."
-      );
-
-    }
-
-
-    const current =
-      orders.get(order.id);
-
-
-    const updated = {
-
-      ...current,
-
-      deliveryStatus:
-        "delivered",
-
-      supplierTransactionId:
-        result?.transacao?.id ||
-        result?.transaction?.id ||
-        null,
-
-      supplierResponse:
-        result,
-
-      deliveredAt:
-        new Date().toISOString(),
-
-      updatedAt:
-        new Date().toISOString()
-
-    };
-
-
-    orders.set(
-      order.id,
-      updated
-    );
-
-
-    console.log(
-      `Entrega concluída: ${order.id}`
-    );
-
-
-    return updated;
-
-
-  } catch (error) {
-
-    console.error(
-      "Erro na entrega automática:",
-      error
-    );
-
-
-    const current =
-      orders.get(order.id);
-
-
-    const updated = {
-
-      ...current,
-
-      deliveryStatus:
-        "failed",
-
-      deliveryError:
-        error.message,
-
-      updatedAt:
-        new Date().toISOString()
-
-    };
-
-
-    orders.set(
-      order.id,
-      updated
-    );
-
-
-    return updated;
-
-  }
+}
+
+
+/* =====================================================
+   ID DO PEDIDO
+===================================================== */
+
+function createOrderId() {
+
+  return (
+    "VZ-" +
+    Date.now().toString(36).toUpperCase() +
+    "-" +
+    crypto
+      .randomBytes(3)
+      .toString("hex")
+      .toUpperCase()
+  );
 
 }
 
 
-// ======================================================
-// REMOVE DADOS SENSÍVEIS DA RESPOSTA
-// ======================================================
-
-function publicOrder(order) {
-
-  if (!order) {
-    return null;
-  }
-
-  const safe = {
-    ...order
-  };
-
-  delete safe.accessToken;
-  delete safe.externalReference;
-  delete safe.supplierResponse;
-
-  return safe;
-
-}
-
-
-// ======================================================
-// HEALTH CHECK
-// ======================================================
-
-app.get(
-  "/health",
-  (req, res) => {
-
-    res.json({
-
-      ok: true,
-
-      store:
-        STORE_NAME,
-
-      freeFireConfigured:
-        Boolean(
-          FREEFIRE_USER_ID &&
-          FREEFIRE_API_KEY
-        ),
-
-      asaasConfigured:
-        Boolean(
-          ASAAS_API_KEY
-        ),
-
-      orderSecretConfigured:
-        Boolean(
-          ORDER_SECRET.length >= 32
-        )
-
-    });
-
-  }
-);
-
-
-// ======================================================
-// PRODUTOS
-// ======================================================
+/* =====================================================
+   PRODUTOS
+===================================================== */
 
 app.get(
   "/api/products",
@@ -757,9 +357,39 @@ app.get(
 
       ok: true,
 
-      products:
-        Object.values(
-          products
+      products
+
+    });
+
+  }
+);
+
+
+/* =====================================================
+   CONFIGURAÇÃO DO SITE
+===================================================== */
+
+app.get(
+  "/api/config",
+  (req, res) => {
+
+    res.json({
+
+      ok: true,
+
+      storeName:
+        "VIBEZ DIAMONDS",
+
+      supplierConfigured:
+        Boolean(
+          SUPPLIER_API_URL &&
+          SUPPLIER_USER_ID &&
+          SUPPLIER_API_KEY
+        ),
+
+      paymentConfigured:
+        Boolean(
+          ASAAS_API_KEY
         )
 
     });
@@ -768,98 +398,9 @@ app.get(
 );
 
 
-// ======================================================
-// VERIFICAR TOKEN DO JOGADOR
-// ======================================================
-
-app.post(
-  "/api/verify-player",
-  async (req, res) => {
-
-    try {
-
-      const {
-        accessToken,
-        diamondAmount
-      } = req.body || {};
-
-
-      if (
-        !String(
-          accessToken || ""
-        ).trim()
-      ) {
-
-        return res.status(400).json({
-
-          ok: false,
-
-          error:
-            "Informe o accessToken do jogador."
-
-        });
-
-      }
-
-
-      const data =
-        await freeFire(
-          "/api/v1/diamonds/verify",
-          {
-
-            accessToken:
-              String(
-                accessToken
-              ),
-
-            ...(diamondAmount
-              ? {
-                  diamondAmount:
-                    String(
-                      diamondAmount
-                    )
-                }
-              : {})
-
-          }
-        );
-
-
-      res.json({
-
-        ok: true,
-
-        data
-
-      });
-
-
-    } catch (error) {
-
-      console.error(
-        "Erro ao verificar jogador:",
-        error
-      );
-
-
-      res.status(400).json({
-
-        ok: false,
-
-        error:
-          error.message
-
-      });
-
-    }
-
-  }
-);
-
-
-// ======================================================
-// CRIAR PEDIDO
-// ======================================================
+/* =====================================================
+   CRIAR PEDIDO
+===================================================== */
 
 app.post(
   "/api/orders",
@@ -867,19 +408,20 @@ app.post(
 
     try {
 
+      checkConfig();
+
       const {
         productId,
         playerId,
         accessToken
       } = req.body || {};
 
-
-      // ----------------------------------------------
-      // PRODUTO
-      // ----------------------------------------------
-
       const product =
-        products[productId];
+        products.find(
+          item =>
+            item.id ===
+            productId
+        );
 
 
       if (!product) {
@@ -896,15 +438,15 @@ app.post(
       }
 
 
-      // ----------------------------------------------
-      // PLAYER ID
-      // ----------------------------------------------
+      const cleanPlayerId =
+        String(
+          playerId || ""
+        ).trim();
+
 
       if (
         !/^\d{5,15}$/.test(
-          String(
-            playerId || ""
-          )
+          cleanPlayerId
         )
       ) {
 
@@ -920,95 +462,29 @@ app.post(
       }
 
 
-      // ----------------------------------------------
-      // ACCESS TOKEN PARA DIAMANTES
-      // ----------------------------------------------
-
       if (
-        product.type ===
-        "diamonds"
+        product.requires ===
+        "accessToken" &&
+        !String(
+          accessToken || ""
+        ).trim()
       ) {
 
-        if (
-          !String(
-            accessToken || ""
-          ).trim()
-        ) {
+        return res.status(400).json({
 
-          return res.status(400).json({
+          ok: false,
 
-            ok: false,
+          error:
+            "Informe o accessToken."
 
-            error:
-              "Para diamantes, informe o token de acesso do jogador."
-
-          });
-
-        }
+        });
 
       }
 
 
-      configured();
-
-
-      // ----------------------------------------------
-      // ID DO PEDIDO
-      // ----------------------------------------------
-
       const orderId =
-        `VZ-${Date.now()}-${crypto
-          .randomBytes(3)
-          .toString("hex")}`;
+        createOrderId();
 
-
-      // ----------------------------------------------
-      // REFERÊNCIA CRIPTOGRAFADA
-      // ----------------------------------------------
-
-      const secretReference =
-        encrypt(
-          JSON.stringify({
-
-            id:
-              orderId,
-
-            productId:
-              product.id,
-
-            type:
-              product.type,
-
-            amount:
-              product.amount ||
-              null,
-
-            quantity:
-              product.quantity ||
-              null,
-
-            playerId:
-              String(
-                playerId
-              ),
-
-            accessToken:
-              product.type ===
-              "diamonds"
-
-                ? String(
-                    accessToken
-                  )
-
-                : ""
-
-          })
-        );
-
-
-      // ----------------------------------------------
-      // PEDIDO
-      // ----------------------------------------------
 
       const order = {
 
@@ -1018,51 +494,42 @@ app.post(
         productId:
           product.id,
 
-        type:
-          product.type,
-
         productName:
           product.name,
 
+        type:
+          product.type,
+
         amount:
-          product.amount ||
-          null,
+          product.amount || null,
 
         quantity:
-          product.quantity ||
-          null,
+          product.quantity || null,
 
         playerId:
-          String(
-            playerId
-          ),
+          cleanPlayerId,
+
+        /*
+          O token fica somente no servidor.
+          Nunca enviamos esse campo ao navegador.
+        */
 
         accessToken:
-          product.type ===
-          "diamonds"
-
-            ? String(
-                accessToken
-              )
-
-            : "",
+          product.requires ===
+          "accessToken"
+            ? String(accessToken)
+            : null,
 
         price:
           product.price,
 
         status:
-          "pending_payment",
+          "waiting_payment",
 
         deliveryStatus:
           "waiting_payment",
 
-        externalReference:
-          secretReference,
-
         createdAt:
-          new Date().toISOString(),
-
-        updatedAt:
           new Date().toISOString()
 
       };
@@ -1074,16 +541,12 @@ app.post(
       );
 
 
-      // ----------------------------------------------
-      // CRIAR CHECKOUT ASAAS
-      // ----------------------------------------------
-
-      const url =
-        baseUrl(req);
-
+      /* =================================================
+         CHECKOUT ASAAS
+      ================================================= */
 
       const checkout =
-        await asaas(
+        await asaasRequest(
           "/checkouts",
           {
 
@@ -1100,22 +563,22 @@ app.post(
               60,
 
             externalReference:
-              secretReference,
+              orderId,
 
             callback: {
 
               successUrl:
-                `${url}/?payment=success&order=${encodeURIComponent(
+                `${APP_URL}/?payment=success&order=${encodeURIComponent(
                   orderId
                 )}`,
 
               cancelUrl:
-                `${url}/?payment=cancelled&order=${encodeURIComponent(
+                `${APP_URL}/?payment=cancelled&order=${encodeURIComponent(
                   orderId
                 )}`,
 
               expiredUrl:
-                `${url}/?payment=expired&order=${encodeURIComponent(
+                `${APP_URL}/?payment=expired&order=${encodeURIComponent(
                   orderId
                 )}`
 
@@ -1132,10 +595,9 @@ app.post(
                   product.name,
 
                 description:
-                  `Pedido ${orderId}`,
+                  `Pedido VIBEZ ${orderId}`,
 
-                quantity:
-                  1,
+                quantity: 1,
 
                 value:
                   product.price
@@ -1148,19 +610,28 @@ app.post(
         );
 
 
-      // ----------------------------------------------
-      // LINK DO CHECKOUT
-      // ----------------------------------------------
-
       const checkoutLink =
         checkout.link ||
-        `https://asaas.com/checkoutSession/show?id=${checkout.id}`;
+        (
+          checkout.id
+            ? `https://asaas.com/checkoutSession/show?id=${encodeURIComponent(
+                checkout.id
+              )}`
+            : null
+        );
+
+
+      if (!checkoutLink) {
+
+        throw new Error(
+          "Asaas não retornou o link do checkout."
+        );
+
+      }
 
 
       orders.set(
-
         orderId,
-
         {
 
           ...order,
@@ -1168,19 +639,9 @@ app.post(
           checkoutId:
             checkout.id,
 
-          checkoutLink:
-            checkoutLink,
-
-          updatedAt:
-            new Date().toISOString()
+          checkoutLink
 
         }
-
-      );
-
-
-      console.log(
-        `Pedido criado: ${orderId}`
       );
 
 
@@ -1188,9 +649,7 @@ app.post(
 
         ok: true,
 
-        orderId:
-
-          orderId,
+        orderId,
 
         checkout: {
 
@@ -1212,13 +671,13 @@ app.post(
         error
       );
 
-
       res.status(500).json({
 
         ok: false,
 
         error:
-          error.message
+          error.message ||
+          "Erro ao criar pagamento."
 
       });
 
@@ -1228,9 +687,9 @@ app.post(
 );
 
 
-// ======================================================
-// CONSULTAR PEDIDO
-// ======================================================
+/* =====================================================
+   CONSULTAR PEDIDO
+===================================================== */
 
 app.get(
   "/api/orders/:id",
@@ -1256,12 +715,24 @@ app.get(
     }
 
 
+    /*
+      Nunca devolvemos o accessToken
+      para o navegador.
+    */
+
+    const safeOrder = {
+      ...order
+    };
+
+    delete safeOrder.accessToken;
+
+
     res.json({
 
       ok: true,
 
       order:
-        publicOrder(order)
+        safeOrder
 
     });
 
@@ -1269,9 +740,9 @@ app.get(
 );
 
 
-// ======================================================
-// WEBHOOK ASAAS
-// ======================================================
+/* =====================================================
+   WEBHOOK ASAAS
+===================================================== */
 
 app.post(
   "/api/webhooks/asaas",
@@ -1279,20 +750,415 @@ app.post(
 
     try {
 
-      // --------------------------------------------
-      // SEGURANÇA DO WEBHOOK
-      // --------------------------------------------
+      const event =
+        String(
+          req.body?.event || ""
+        ).toUpperCase();
+
+
+      const payment =
+        req.body?.payment || {};
+
+
+      const externalReference =
+        payment.externalReference ||
+        req.body?.checkout?.externalReference;
+
+
+      if (!externalReference) {
+
+        return res.status(200).json({
+          received: true
+        });
+
+      }
+
+
+      const eventKey =
+        `${event}:${payment.id || externalReference}`;
+
 
       if (
-        WEBHOOK_AUTH_TOKEN
+        processedEvents.has(
+          eventKey
+        )
       ) {
 
-        const received =
-          req.get(
-            "asaas-access-token"
-          ) ||
-          req
-            .get("Authorization")
-            ?.replace(
-              /^Bearer\s+/i,
-          
+        return res.status(200).json({
+          received: true
+        });
+
+      }
+
+
+      processedEvents.add(
+        eventKey
+      );
+
+
+      const order =
+        orders.get(
+          externalReference
+        );
+
+
+      if (!order) {
+
+        console.log(
+          "Pedido não encontrado:",
+          externalReference
+        );
+
+        return res.status(200).json({
+          received: true
+        });
+
+      }
+
+
+      /* =================================================
+         PAGAMENTO RECEBIDO
+      ================================================= */
+
+      if (
+        event ===
+          "PAYMENT_RECEIVED" ||
+        event ===
+          "PAYMENT_CONFIRMED"
+      ) {
+
+        const paidOrder = {
+
+          ...order,
+
+          status:
+            "paid",
+
+          paymentId:
+            payment.id || null,
+
+          paidAt:
+            new Date().toISOString(),
+
+          deliveryStatus:
+            "processing"
+
+        };
+
+
+        orders.set(
+          order.id,
+          paidOrder
+        );
+
+
+        /*
+          ATENÇÃO:
+          Aqui está a chamada ao fornecedor.
+
+          NÃO vamos inventar os parâmetros da API.
+          Quando você me passar a tela/documentação
+          exata do endpoint escolhido, ajustamos estas
+          funções para os parâmetros oficiais.
+        */
+
+        try {
+
+          let result;
+
+
+          if (
+            order.type ===
+            "diamonds"
+          ) {
+
+            result =
+              await supplierRequest(
+                "/api/v1/diamonds/send",
+                {
+
+                  accessToken:
+                    order.accessToken,
+
+                  diamondAmount:
+                    order.amount
+
+                }
+              );
+
+          }
+
+
+          else if (
+            order.type ===
+            "token"
+          ) {
+
+            result =
+              await supplierRequest(
+                "/api/v1/tokens/send",
+                {
+
+                  playerID:
+                    order.playerId,
+
+                  quantity:
+                    order.quantity || 1,
+
+                  mensagem:
+                    `Pedido ${order.id}`
+
+                }
+              );
+
+          }
+
+
+          else if (
+            order.type ===
+            "pass"
+          ) {
+
+            result =
+              await supplierRequest(
+                "/api/v1/pass/send",
+                {
+
+                  uid:
+                    order.playerId
+
+                }
+              );
+
+          }
+
+
+          orders.set(
+            order.id,
+            {
+
+              ...paidOrder,
+
+              deliveryStatus:
+                "delivered",
+
+              supplierResponse:
+                result,
+
+              deliveredAt:
+                new Date().toISOString()
+
+            }
+          );
+
+
+          console.log(
+            "Entrega concluída:",
+            order.id
+          );
+
+
+        } catch (deliveryError) {
+
+          console.error(
+            "Erro na entrega:",
+            deliveryError
+          );
+
+
+          orders.set(
+            order.id,
+            {
+
+              ...paidOrder,
+
+              deliveryStatus:
+                "failed",
+
+              deliveryError:
+                deliveryError.message
+
+            }
+          );
+
+        }
+
+      }
+
+
+      /* =================================================
+         PAGAMENTO CANCELADO
+      ================================================= */
+
+      if (
+        event ===
+        "PAYMENT_DELETED"
+      ) {
+
+        orders.set(
+          order.id,
+          {
+
+            ...order,
+
+            status:
+              "cancelled",
+
+            deliveryStatus:
+              "cancelled"
+
+          }
+        );
+
+      }
+
+
+      res.status(200).json({
+
+        received:
+          true
+
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Erro no webhook:",
+        error
+      );
+
+      res.status(500).json({
+
+        received:
+          false
+
+      });
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   HEALTH CHECK
+===================================================== */
+
+app.get(
+  "/health",
+  (req, res) => {
+
+    res.json({
+
+      ok: true,
+
+      service:
+        "VIBEZ DIAMONDS",
+
+      supplier:
+        Boolean(
+          SUPPLIER_API_URL &&
+          SUPPLIER_USER_ID &&
+          SUPPLIER_API_KEY
+        ),
+
+      asaas:
+        Boolean(
+          ASAAS_API_KEY
+        )
+
+    });
+
+  }
+);
+
+
+/* =====================================================
+   FALLBACK PARA INDEX.HTML
+===================================================== */
+
+app.use(
+  (req, res, next) => {
+
+    if (
+      req.method !== "GET" ||
+      req.path.startsWith("/api/")
+    ) {
+
+      return next();
+
+    }
+
+
+    res.sendFile(
+      path.join(
+        __dirname,
+        "index.html"
+      )
+    );
+
+  }
+);
+
+
+/* =====================================================
+   404
+===================================================== */
+
+app.use(
+  (req, res) => {
+
+    res.status(404).json({
+
+      ok: false,
+
+      error:
+        "Página não encontrada."
+
+    });
+
+  }
+);
+
+
+/* =====================================================
+   SERVIDOR
+===================================================== */
+
+app.listen(
+  PORT,
+  () => {
+
+    console.log(
+      "===================================="
+    );
+
+    console.log(
+      `VIBEZ DIAMONDS rodando na porta ${PORT}`
+    );
+
+    console.log(
+      `Fornecedor configurado: ${
+        Boolean(
+          SUPPLIER_API_URL &&
+          SUPPLIER_USER_ID &&
+          SUPPLIER_API_KEY
+        )
+      }`
+    );
+
+    console.log(
+      `Asaas configurado: ${
+        Boolean(
+          ASAAS_API_KEY
+        )
+      }`
+    );
+
+    console.log(
+      "===================================="
+    );
+
+  }
+);
