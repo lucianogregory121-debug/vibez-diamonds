@@ -1,1479 +1,732 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>VIBEZ DIAMONDS</title>
 
 <style>
 *{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
+  box-sizing:border-box
 }
 
 body{
-  min-height:100vh;
-  background:
-    radial-gradient(circle at 50% 0%,#42117d 0%,transparent 38%),
-    #05030a;
-  color:#fff;
-  font-family:Arial,Helvetica,sans-serif;
-  overflow-x:hidden;
+  margin:0;
+  font-family:Inter,system-ui,Arial,sans-serif;
+  background:#09070f;
+  color:#fff
 }
-
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  opacity:.45;
-  background-image:
-    radial-gradient(circle,#fff 1px,transparent 1px),
-    radial-gradient(circle,#9b5cff 1px,transparent 1px);
-  background-size:95px 95px,150px 150px;
-  background-position:0 0,45px 65px;
-}
-
-/* =========================
-   TOPO
-========================= */
 
 header{
-  position:relative;
-  z-index:20;
-
-  height:68px;
-
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-
-  padding:0 5%;
-
-  background:rgba(5,3,12,.94);
-
-  border-bottom:1px solid rgba(168,85,247,.25);
-
-  backdrop-filter:blur(12px);
-}
-
-.logo{
-  font-size:22px;
-  font-weight:900;
-}
-
-.logo span{
-  color:#a855f7;
-  text-shadow:0 0 15px #8b5cf6;
-}
-
-.online{
-  display:flex;
-  align-items:center;
-  gap:7px;
-
-  padding:9px 15px;
-
-  border:1px solid rgba(168,85,247,.5);
-  border-radius:30px;
-
-  background:rgba(139,92,246,.08);
-
-  font-size:12px;
-  font-weight:bold;
-}
-
-.online-dot{
-  width:8px;
-  height:8px;
-
-  border-radius:50%;
-
-  background:#20e66c;
-
-  box-shadow:0 0 12px #20e66c;
-}
-
-/* =========================
-   BANNER
-========================= */
-
-.hero{
-  position:relative;
-
-  min-height:430px;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  overflow:hidden;
-
-  border-bottom:1px solid rgba(168,85,247,.2);
-}
-
-.hero-image{
-  position:absolute;
-  inset:0;
-
-  width:100%;
-  height:100%;
-
-  object-fit:cover;
-  object-position:center;
-
-  opacity:.55;
-}
-
-.hero::after{
-  content:"";
-
-  position:absolute;
-  inset:0;
-
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(20,5,35,.25),
-      rgba(8,3,15,.55) 65%,
-      #08040e 100%
-    );
-}
-
-.hero-content{
-  position:relative;
-  z-index:3;
-
-  width:92%;
-
+  padding:22px 16px;
   text-align:center;
-
-  padding-top:25px;
+  background:linear-gradient(135deg,#130d22,#251047);
+  border-bottom:1px solid #342054
 }
 
-.badge{
-  display:inline-block;
-
-  padding:9px 17px;
-
-  border-radius:30px;
-
-  background:rgba(67,18,116,.7);
-
-  border:1px solid rgba(192,132,252,.5);
-
-  color:#d8b4fe;
-
-  font-size:11px;
-  font-weight:900;
-
-  letter-spacing:1.4px;
-
-  margin-bottom:20px;
+h1{
+  margin:0;
+  font-size:27px;
+  letter-spacing:1px
 }
 
-.hero h1{
-  font-size:clamp(44px,8vw,82px);
-
-  line-height:.9;
-
-  font-weight:1000;
-
-  text-transform:uppercase;
-
-  text-shadow:
-    0 5px 0 rgba(0,0,0,.7),
-    0 0 30px rgba(168,85,247,.5);
+header p{
+  margin:7px 0 0;
+  color:#b9a9ce
 }
 
-.hero h1 span{
+.wrap{
+  max-width:900px;
+  margin:auto;
+  padding:20px 14px 50px
+}
+
+.card{
+  background:#15111d;
+  border:1px solid #302343;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:16px;
+  box-shadow:0 10px 35px #0006
+}
+
+.label{
   display:block;
-
-  background:
-    linear-gradient(
-      180deg,
-      #fff,
-      #d8b4fe 45%,
-      #7c3aed
-    );
-
-  -webkit-background-clip:text;
-  background-clip:text;
-
-  color:transparent;
+  margin:0 0 7px;
+  color:#cdbfe0;
+  font-size:14px
 }
 
-.hero p{
-  margin:23px auto 0;
-
-  max-width:650px;
-
-  color:#ddd6e7;
-
-  font-size:14px;
-  line-height:1.6;
-}
-
-/* =========================
-   PAINEL
-========================= */
-
-.container{
-  position:relative;
-  z-index:5;
-
-  width:min(1100px,94%);
-
-  margin:-40px auto 60px;
-}
-
-.panel{
-  padding:24px;
-
-  border-radius:22px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(25,15,43,.98),
-      rgba(9,6,17,.98)
-    );
-
-  border:1px solid rgba(168,85,247,.3);
-
-  box-shadow:
-    0 30px 80px rgba(0,0,0,.65),
-    0 0 50px rgba(139,92,246,.1);
-}
-
-/* =========================
-   CAMPOS
-========================= */
-
-.top-fields{
-  display:grid;
-
-  grid-template-columns:1fr 1fr;
-
-  gap:15px;
-
-  margin-bottom:25px;
-}
-
-.field label{
-  display:block;
-
-  margin-bottom:8px;
-
-  color:#c4b5fd;
-
-  font-size:11px;
-  font-weight:900;
-
-  text-transform:uppercase;
-}
-
-input{
+.input{
   width:100%;
-  height:52px;
-
-  padding:0 15px;
-
-  border-radius:13px;
-
-  border:1px solid rgba(168,85,247,.25);
-
-  outline:none;
-
-  background:#08050f;
-
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #443457;
+  background:#0d0a13;
   color:#fff;
-
-  font-size:14px;
+  font-size:16px;
+  outline:none
 }
 
-input:focus{
-  border-color:#a855f7;
-
-  box-shadow:
-    0 0 0 3px rgba(168,85,247,.12);
+.input:focus{
+  border-color:#9b55ff;
+  box-shadow:0 0 0 3px #9b55ff22
 }
 
-input[readonly]{
-  color:#c4b5fd;
-}
-
-/* =========================
-   TÍTULO
-========================= */
-
-.section-title{
-  display:flex;
-
-  align-items:center;
-  justify-content:space-between;
-
-  margin-bottom:15px;
-}
-
-.section-title h2{
-  font-size:18px;
-}
-
-.section-title small{
-  color:#8d8699;
-  font-size:11px;
-}
-
-/* =========================
-   PACOTES
-========================= */
-
-.products{
+.grid{
   display:grid;
-
-  grid-template-columns:
-    repeat(3,minmax(0,1fr));
-
-  gap:14px;
-
-  margin-bottom:25px;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:10px
 }
 
 .product{
-  position:relative;
-
-  min-height:160px;
-
-  padding:17px;
-
-  border-radius:17px;
-
-  border:1px solid rgba(168,85,247,.22);
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(27,18,44,.98),
-      rgba(10,7,18,.98)
-    );
-
+  border:1px solid #3b2a4d;
+  background:#100c16;
+  border-radius:15px;
+  padding:15px;
   cursor:pointer;
-
-  transition:.2s;
+  transition:.15s
 }
 
 .product:hover{
-  transform:translateY(-4px);
-
-  border-color:#a855f7;
-
-  box-shadow:
-    0 15px 35px rgba(0,0,0,.45),
-    0 0 25px rgba(139,92,246,.18);
+  transform:translateY(-2px);
+  border-color:#8747e8
 }
 
 .product.selected{
-  border-color:#b36cff;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(74,29,120,.55),
-      rgba(18,10,30,.98)
-    );
-
-  box-shadow:
-    0 0 0 2px rgba(168,85,247,.2),
-    0 0 30px rgba(139,92,246,.2);
-}
-
-.selected-check{
-  display:none;
-
-  position:absolute;
-
-  top:10px;
-  right:10px;
-
-  width:27px;
-  height:27px;
-
-  align-items:center;
-  justify-content:center;
-
-  border-radius:50%;
-
-  background:#8b5cf6;
-
-  font-weight:900;
-}
-
-.product.selected .selected-check{
-  display:flex;
+  border-color:#a35dff;
+  background:#21122f;
+  box-shadow:0 0 0 2px #a35dff33
 }
 
 .diamond{
-  font-size:26px;
-
-  margin-bottom:5px;
-
-  filter:drop-shadow(0 0 7px #38bdf8);
+  font-size:28px
 }
 
-.diamond-count{
-  font-size:24px;
-  font-weight:900;
-}
-
-.diamond-label{
-  color:#aaa3b8;
-
-  font-size:11px;
-
-  margin-top:2px;
+.name{
+  font-weight:700;
+  margin-top:8px
 }
 
 .price{
-  margin-top:9px;
-
-  color:#d8b4fe;
-
-  font-size:15px;
-  font-weight:900;
+  margin-top:6px;
+  color:#c78aff;
+  font-size:18px;
+  font-weight:800
 }
 
-.select-button{
-  width:100%;
-
-  height:37px;
-
-  margin-top:12px;
-
-  border:0;
-
-  border-radius:9px;
-
-  background:
-    linear-gradient(
-      90deg,
-      #7c3aed,
-      #a855f7
-    );
-
-  color:#fff;
-
-  font-weight:900;
-
-  cursor:pointer;
+.muted{
+  color:#a99bb8;
+  font-size:13px
 }
 
-/* =========================
-   PAGAMENTO
-========================= */
-
-.payment{
-  margin-top:5px;
-}
-
-.payment-buttons{
+.row{
   display:flex;
-
   gap:10px;
-
-  margin-bottom:17px;
+  flex-wrap:wrap
 }
 
-.method{
-  padding:12px 20px;
-
-  border-radius:11px;
-
-  border:1px solid rgba(168,85,247,.3);
-
-  background:#0b0713;
-
-  color:#fff;
-
-  font-weight:bold;
-
-  cursor:pointer;
-}
-
-.method.active{
-  border-color:#a855f7;
-
-  background:rgba(139,92,246,.2);
-
-  box-shadow:0 0 20px rgba(139,92,246,.12);
-}
-
-/* =========================
-   BOTÃO
-========================= */
-
-.continue{
-  width:100%;
-
-  height:56px;
-
+.btn{
   border:0;
-
-  border-radius:14px;
-
-  background:
-    linear-gradient(
-      90deg,
-      #16d95f,
-      #22e66f
-    );
-
-  color:#04100a;
-
-  font-size:14px;
-
-  font-weight:1000;
-
-  cursor:pointer;
-
-  transition:.2s;
+  border-radius:13px;
+  padding:14px 18px;
+  font-weight:800;
+  cursor:pointer
 }
 
-.continue:hover:not(:disabled){
-  transform:translateY(-2px);
-
-  box-shadow:
-    0 10px 30px rgba(34,230,111,.25);
+.primary{
+  background:linear-gradient(90deg,#7432d4,#a24fff);
+  color:#fff;
+  flex:1
 }
 
-.continue:disabled{
+.secondary{
+  background:#27202f;
+  color:#fff
+}
+
+.btn:disabled{
   opacity:.45;
-
-  cursor:not-allowed;
+  cursor:not-allowed
 }
-
-/* =========================
-   STATUS
-========================= */
 
 .status{
   display:none;
-
-  margin-top:14px;
-
-  padding:14px;
-
+  margin-top:13px;
+  padding:13px;
   border-radius:12px;
-
-  text-align:center;
-
-  font-size:13px;
-
-  font-weight:bold;
+  background:#201829
 }
 
 .status.show{
-  display:block;
+  display:block
 }
 
-.status.error{
-  color:#fca5a5;
-
-  background:rgba(239,68,68,.1);
-
-  border:1px solid rgba(239,68,68,.3);
+.ok{
+  border:1px solid #3ea76b
 }
 
-.status.loading{
-  color:#d8b4fe;
-
-  background:rgba(139,92,246,.1);
-
-  border:1px solid rgba(139,92,246,.3);
+.err{
+  border:1px solid #a9475a
 }
 
-/* =========================
-   AVISO
-========================= */
+.warn{
+  border:1px solid #9a7b35
+}
+
+.hidden{
+  display:none
+}
+
+.small{
+  font-size:12px;
+  color:#9e91ad;
+  line-height:1.5
+}
 
 .notice{
+  color:#b8acc3;
+  font-size:13px;
+  line-height:1.55
+}
+
+.tag{
+  display:inline-block;
+  padding:5px 8px;
+  border-radius:999px;
+  background:#241634;
+  color:#c99aff;
+  font-size:11px;
+  margin-top:8px
+}
+
+.orderbox{
   margin-top:14px;
-
-  padding:17px;
-
-  border-radius:14px;
-
-  border:1px solid rgba(168,85,247,.15);
-
-  background:rgba(10,7,18,.75);
-
-  color:#aaa3b8;
-
-  font-size:11px;
-
-  line-height:1.6;
+  padding:14px;
+  background:#0d0a13;
+  border-radius:12px
 }
 
-.notice strong{
-  color:#d8b4fe;
-}
-
-/* =========================
-   RODAPÉ
-========================= */
-
-footer{
-  position:relative;
-  z-index:2;
-
-  padding:30px;
-
-  text-align:center;
-
-  color:#686174;
-
-  font-size:11px;
-}
-
-/* =========================
-   CELULAR
-========================= */
-
-@media(max-width:750px){
-
-  header{
-    padding:0 18px;
-  }
-
-  .hero{
-    min-height:400px;
-  }
-
-  .hero h1{
-    font-size:48px;
-  }
-
-  .hero p{
-    font-size:13px;
-  }
-
-  .container{
-    width:94%;
-
-    margin-top:-30px;
-  }
-
-  .top-fields{
-    grid-template-columns:1fr;
-  }
-
-  .products{
-    grid-template-columns:repeat(2,1fr);
-
-    gap:10px;
-  }
-
-  .panel{
-    padding:17px;
-  }
-
-}
-
-@media(max-width:420px){
-
-  .hero{
-    min-height:370px;
-  }
-
-  .hero h1{
-    font-size:39px;
-  }
-
-  .products{
-    grid-template-columns:repeat(2,1fr);
-
-    gap:8px;
-  }
-
-  .product{
-    padding:12px;
-  }
-
-  .diamond-count{
-    font-size:20px;
-  }
-
-  .price{
-    font-size:13px;
-  }
-
-  .select-button{
-    font-size:11px;
-  }
-
+.loader{
+  opacity:.7
 }
 </style>
 </head>
 
 <body>
 
-<!-- =========================
-     TOPO
-========================= -->
-
 <header>
-
-  <div class="logo">
-    VIBEZ <span>DIAMONDS</span>
-  </div>
-
-  <div class="online">
-    <span class="online-dot"></span>
-    Loja online
-  </div>
-
+  <h1>💎 VIBEZ DIAMONDS</h1>
+  <p>Diamantes, Tokens e Passe Booyah</p>
 </header>
 
+<div class="wrap">
 
-<!-- =========================
-     BANNER
-========================= -->
+  <div class="card">
 
-<section class="hero">
+    <label class="label" for="playerId">
+      Player ID
+    </label>
 
-  <!--
-    Se sua imagem atual já está funcionando,
-    mantenha o mesmo nome do arquivo aqui.
-  -->
+    <input
+      class="input"
+      id="playerId"
+      inputmode="numeric"
+      maxlength="15"
+      placeholder="Digite o ID do jogador"
+    >
 
-  <img
-    class="hero-image"
-    src="1000169126.png"
-    alt="VIBEZ DIAMONDS"
-    onerror="this.style.display='none'"
-  >
-
-  <div class="hero-content">
-
-    <div class="badge">
-      ⚡ RECARGA RÁPIDA • PAGAMENTO SEGURO
-    </div>
-
-    <h1>
-      COMPRE SEUS
-      <span>DIAMANTES</span>
-    </h1>
-
-    <p>
-      Escolha seu pacote, informe o ID do jogador
-      e continue para o pagamento seguro.
-    </p>
-
-  </div>
-
-</section>
-
-
-<!-- =========================
-     PAINEL
-========================= -->
-
-<main class="container">
-
-<div class="panel">
-
-  <!-- DADOS -->
-
-  <div class="top-fields">
-
-    <div class="field">
-
-      <label>
-        ID do jogador
-      </label>
-
-      <input
-        id="playerId"
-        type="text"
-        inputmode="numeric"
-        maxlength="15"
-        placeholder="Digite o ID do Free Fire"
-      >
-
-    </div>
-
-
-    <div class="field">
-
-      <label>
-        Pacote selecionado
-      </label>
-
-      <input
-        id="selectedPackage"
-        type="text"
-        readonly
-        value="Nenhum pacote selecionado"
-      >
-
+    <div class="small" style="margin-top:7px">
+      Use o UID numérico do jogador.
     </div>
 
   </div>
 
 
-  <!-- PACOTES -->
+  <div class="card">
 
-  <div class="section-title">
-
-    <h2>
-      💎 Escolha seu pacote
+    <h2 style="margin-top:0">
+      Escolha seu produto
     </h2>
 
-    <small>
-      Selecione uma opção
-    </small>
+    <div id="products" class="grid"></div>
 
   </div>
 
 
-  <div
-    id="products"
-    class="products"
-  >
+  <div id="tokenBox" class="card hidden">
 
-    <!-- 100 -->
+    <label class="label" for="accessToken">
+      Token de acesso do jogador
+    </label>
 
-    <div
-      class="product"
-      data-id="d100"
-      data-diamonds="100"
-      data-price="5.00"
+    <input
+      class="input"
+      id="accessToken"
+      type="password"
+      autocomplete="off"
+      placeholder="Cole o accessToken do Free Fire"
     >
 
-      <div class="selected-check">✓</div>
-
-      <div class="diamond">💎</div>
-
-      <div class="diamond-count">
-        100
-      </div>
-
-      <div class="diamond-label">
-        Diamantes
-      </div>
-
-      <div class="price">
-        R$ 5,00
-      </div>
-
-      <button
-        class="select-button"
-        type="button"
-      >
-        Selecionar
-      </button>
-
-    </div>
-
-
-    <!-- 310 -->
-
-    <div
-      class="product"
-      data-id="d310"
-      data-diamonds="310"
-      data-price="12.99"
-    >
-
-      <div class="selected-check">✓</div>
-
-      <div class="diamond">💎</div>
-
-      <div class="diamond-count">
-        310
-      </div>
-
-      <div class="diamond-label">
-        Diamantes
-      </div>
-
-      <div class="price">
-        R$ 12,99
-      </div>
-
-      <button
-        class="select-button"
-        type="button"
-      >
-        Selecionar
-      </button>
-
-    </div>
-
-
-    <!-- 520 -->
-
-    <div
-      class="product"
-      data-id="d520"
-      data-diamonds="520"
-      data-price="19.99"
-    >
-
-      <div class="selected-check">✓</div>
-
-      <div class="diamond">💎</div>
-
-      <div class="diamond-count">
-        520
-      </div>
-
-      <div class="diamond-label">
-        Diamantes
-      </div>
-
-      <div class="price">
-        R$ 19,99
-      </div>
-
-      <button
-        class="select-button"
-        type="button"
-      >
-        Selecionar
-      </button>
-
-    </div>
-
-
-    <!-- 1060 -->
-
-    <div
-      class="product"
-      data-id="d1060"
-      data-diamonds="1060"
-      data-price="39.99"
-    >
-
-      <div class="selected-check">✓</div>
-
-      <div class="diamond">💎</div>
-
-      <div class="diamond-count">
-        1.060
-      </div>
-
-      <div class="diamond-label">
-        Diamantes
-      </div>
-
-      <div class="price">
-        R$ 39,99
-      </div>
-
-      <button
-        class="select-button"
-        type="button"
-      >
-        Selecionar
-      </button>
-
-    </div>
-
-
-    <!-- 2180 -->
-
-    <div
-      class="product"
-      data-id="d2180"
-      data-diamonds="2180"
-      data-price="79.99"
-    >
-
-      <div class="selected-check">✓</div>
-
-      <div class="diamond">💎</div>
-
-      <div class="diamond-count">
-        2.180
-      </div>
-
-      <div class="diamond-label">
-        Diamantes
-      </div>
-
-      <div class="price">
-        R$ 79,99
-      </div>
-
-      <button
-        class="select-button"
-        type="button"
-      >
-        Selecionar
-      </button>
-
-    </div>
-
-
-    <!-- 5600 -->
-
-    <div
-      class="product"
-      data-id="d5600"
-      data-diamonds="5600"
-      data-price="199.99"
-    >
-
-      <div class="selected-check">✓</div>
-
-      <div class="diamond">💎</div>
-
-      <div class="diamond-count">
-        5.600
-      </div>
-
-      <div class="diamond-label">
-        Diamantes
-      </div>
-
-      <div class="price">
-        R$ 199,99
-      </div>
-
-      <button
-        class="select-button"
-        type="button"
-      >
-        Selecionar
-      </button>
-
+    <div class="small" style="margin-top:7px">
+      Importante: para diamantes, a documentação do
+      FreeFire Shop exige <b>accessToken</b>;
+      o Player ID sozinho não substitui esse campo.
     </div>
 
   </div>
 
 
-  <!-- PAGAMENTO -->
+  <div class="card">
 
-  <div class="payment">
-
-    <div class="section-title">
-
-      <h2>
-        Forma de pagamento
-      </h2>
-
+    <div>
+      <b>Pagamento</b>
     </div>
 
-
-    <div class="payment-buttons">
-
-      <button
-        type="button"
-        class="method active"
-        data-method="pix"
-      >
-        💠 PIX
-      </button>
-
-      <button
-        type="button"
-        class="method"
-        data-method="card"
-      >
-        💳 Cartão
-      </button>
-
+    <div class="tag">
+      PIX
     </div>
 
+    <div class="tag">
+      Cartão
+    </div>
+
+    <p class="notice">
+      O pagamento é feito no checkout seguro do Asaas.
+      A entrega só é liberada depois da confirmação
+      financeira via webhook.
+    </p>
 
     <button
-      id="continueButton"
-      class="continue"
-      type="button"
+      id="buy"
+      class="btn primary"
       disabled
     >
       CONTINUAR PARA PAGAMENTO
     </button>
 
+    <div id="status" class="status"></div>
 
-    <div
-      id="status"
-      class="status"
-    ></div>
-
-
-    <div class="notice">
-
-      🔒 <strong>Pagamento seguro</strong>
-
-      <br><br>
-
-      Você será direcionado para uma página
-      segura do Asaas para concluir o pagamento.
-
-      <br><br>
-
-      <strong>Importante:</strong>
-      criar o Checkout não significa que o pagamento
-      foi confirmado. A entrega dos diamantes somente
-      deve ocorrer depois da confirmação financeira.
-
-    </div>
+    <div id="order" class="orderbox hidden"></div>
 
   </div>
 
 </div>
 
-</main>
-
-
-<footer>
-  VIBEZ DIAMONDS • Pagamento seguro • © 2026
-</footer>
-
 
 <script>
 
-/* =========================
-   PRODUTOS
-   AGORA FICAM NO PRÓPRIO HTML
-========================= */
-
-const products = [
-
-  {
-    id:"d100",
-    diamonds:100,
-    price:5.00
-  },
-
-  {
-    id:"d310",
-    diamonds:310,
-    price:12.99
-  },
-
-  {
-    id:"d520",
-    diamonds:520,
-    price:19.99
-  },
-
-  {
-    id:"d1060",
-    diamonds:1060,
-    price:39.99
-  },
-
-  {
-    id:"d2180",
-    diamonds:2180,
-    price:79.99
-  },
-
-  {
-    id:"d5600",
-    diamonds:5600,
-    price:199.99
-  }
-
-];
-
-
-let selectedProduct = null;
-
-let paymentMethod = "pix";
-
-
-/* =========================
-   ELEMENTOS
-========================= */
+const productsEl =
+  document.getElementById('products');
 
 const playerId =
-  document.getElementById("playerId");
+  document.getElementById('playerId');
 
-const selectedPackage =
-  document.getElementById("selectedPackage");
+const accessToken =
+  document.getElementById('accessToken');
 
-const continueButton =
-  document.getElementById("continueButton");
+const tokenBox =
+  document.getElementById('tokenBox');
 
-const statusBox =
-  document.getElementById("status");
+const buy =
+  document.getElementById('buy');
 
-const productCards =
-  document.querySelectorAll(".product");
+const statusEl =
+  document.getElementById('status');
+
+const orderEl =
+  document.getElementById('order');
 
 
-/* =========================
-   SELECIONAR PRODUTO
-========================= */
+let products = [];
+let selected = null;
 
-productCards.forEach(card => {
 
-  card.addEventListener("click", () => {
+function status(msg,type='warn'){
 
-    const id =
-      card.dataset.id;
+  statusEl.textContent = msg;
 
-    selectedProduct =
-      products.find(
-        product => product.id === id
+  statusEl.className =
+    'status show ' + type;
+
+}
+
+
+function validPlayer(){
+
+  return /^\d{5,15}$/.test(
+    playerId.value.trim()
+  );
+
+}
+
+
+function update(){
+
+  buy.disabled =
+    !selected ||
+    !validPlayer() ||
+    (
+      selected.requires === 'accessToken' &&
+      !accessToken.value.trim()
+    );
+
+  tokenBox.classList.toggle(
+    'hidden',
+    !selected ||
+    selected.requires !== 'accessToken'
+  );
+
+}
+
+
+async function loadProducts(){
+
+  try{
+
+    const r =
+      await fetch('/api/products');
+
+    const d =
+      await r.json();
+
+    if(!d.ok){
+
+      throw new Error(
+        d.error || 'Falha ao carregar produtos'
       );
 
-    if(!selectedProduct){
-      return;
     }
 
-
-    /* remove seleção anterior */
-
-    productCards.forEach(item => {
-
-      item.classList.remove("selected");
-
-    });
+    products = d.products;
 
 
-    /* seleciona atual */
+    productsEl.innerHTML =
+      products.map(p => `
 
-    card.classList.add("selected");
+        <div
+          class="product"
+          data-id="${p.id}"
+        >
 
+          <div class="diamond">
+            ${
+              p.type === 'diamonds'
+                ? '💎'
+                : p.type === 'token'
+                  ? '🎁'
+                  : '🛡️'
+            }
+          </div>
 
-    /* mostra pacote */
+          <div class="name">
+            ${p.name}
+          </div>
 
-    selectedPackage.value =
-      `${selectedProduct.diamonds.toLocaleString("pt-BR")} Diamantes — R$ ${selectedProduct.price.toFixed(2).replace(".",",")}`;
+          <div class="price">
+            R$ ${
+              Number(p.price)
+                .toFixed(2)
+                .replace('.',',')
+            }
+          </div>
 
+          <div class="muted">
+            ${
+              p.type === 'diamonds'
+                ? 'Entrega de diamantes'
+                : 'Entrega automática'
+            }
+          </div>
 
-    /* libera botão */
+        </div>
 
-    continueButton.disabled = false;
-
-
-    hideStatus();
-
-  });
-
-});
-
-
-/* =========================
-   MÉTODO PAGAMENTO
-========================= */
-
-document
-.querySelectorAll(".method")
-.forEach(button => {
-
-  button.addEventListener("click", () => {
-
-    document
-    .querySelectorAll(".method")
-    .forEach(item => {
-
-      item.classList.remove("active");
-
-    });
-
-
-    button.classList.add("active");
+      `).join('');
 
 
-    paymentMethod =
-      button.dataset.method;
+    productsEl
+      .querySelectorAll('.product')
+      .forEach(el => {
 
-  });
+        el.onclick = () => {
 
-});
+          selected =
+            products.find(
+              p => p.id === el.dataset.id
+            );
+
+          productsEl
+            .querySelectorAll('.product')
+            .forEach(x =>
+              x.classList.remove('selected')
+            );
+
+          el.classList.add('selected');
+
+          statusEl.className =
+            'status';
+
+          update();
+
+        };
+
+      });
 
 
-/* =========================
-   ID DO JOGADOR
-========================= */
+    update();
 
-playerId.addEventListener("input", () => {
+  }catch(e){
 
-  playerId.value =
-    playerId.value.replace(/\D/g,"");
+    status(
+      e.message,
+      'err'
+    );
 
-  hideStatus();
-
-});
-
-
-/* =========================
-   STATUS
-========================= */
-
-function showStatus(message,type){
-
-  statusBox.textContent = message;
-
-  statusBox.className =
-    "status show " + type;
+  }
 
 }
 
 
-function hideStatus(){
+playerId.addEventListener(
+  'input',
+  () => {
 
-  statusBox.textContent = "";
+    playerId.value =
+      playerId.value.replace(/\D/g,'');
 
-  statusBox.className =
-    "status";
+    update();
 
-}
-
-
-/* =========================
-   PAGAMENTO
-========================= */
-
-continueButton.addEventListener(
-"click",
-async () => {
-
-  const cleanPlayerId =
-    playerId.value.trim();
+  }
+);
 
 
-  /* valida ID */
+accessToken.addEventListener(
+  'input',
+  update
+);
 
-  if(!/^\d{5,15}$/.test(cleanPlayerId)){
 
-    showStatus(
-      "Digite um ID de jogador válido.",
-      "error"
+buy.onclick = async () => {
+
+  if(
+    !selected ||
+    !validPlayer()
+  ){
+
+    return status(
+      'Digite um Player ID válido.',
+      'err'
     );
-
-    playerId.focus();
-
-    return;
 
   }
 
 
-  /* valida pacote */
+  if(
+    selected.requires === 'accessToken' &&
+    !accessToken.value.trim()
+  ){
 
-  if(!selectedProduct){
-
-    showStatus(
-      "Escolha um pacote de diamantes.",
-      "error"
+    return status(
+      'Informe o token de acesso para diamantes.',
+      'err'
     );
-
-    return;
 
   }
 
 
-  continueButton.disabled = true;
+  buy.disabled = true;
 
-  continueButton.textContent =
-    "CRIANDO PAGAMENTO...";
+  buy.textContent =
+    'CRIANDO PAGAMENTO...';
 
-
-  showStatus(
-    "Preparando seu pagamento seguro...",
-    "loading"
+  status(
+    'Preparando checkout seguro...',
+    'warn'
   );
 
 
   try{
 
-    const response =
+    const r =
       await fetch(
-        "/api/orders",
+        '/api/orders',
         {
-          method:"POST",
+          method:'POST',
 
           headers:{
-            "Content-Type":
-              "application/json"
+            'Content-Type':
+              'application/json'
           },
 
           body:JSON.stringify({
 
-            playerId:
-              cleanPlayerId,
-
             productId:
-              selectedProduct.id,
+              selected.id,
 
-            paymentMethod:
-              paymentMethod
+            playerId:
+              playerId.value.trim(),
+
+            accessToken:
+              accessToken.value.trim()
 
           })
+
         }
       );
 
 
-    const data =
-      await response.json();
+    const d =
+      await r.json();
 
 
     if(
-      !response.ok ||
-      !data.ok
+      !r.ok ||
+      !d.ok
     ){
 
       throw new Error(
-        data.error ||
-        "Não foi possível criar o pagamento."
+        d.error ||
+        'Não foi possível criar o pagamento.'
       );
 
     }
 
 
-    if(
-      !data.checkout ||
-      !data.checkout.link
-    ){
-
-      throw new Error(
-        "O Asaas não retornou o link do Checkout."
-      );
-
-    }
-
-
-    showStatus(
-      "Checkout criado. Redirecionando...",
-      "loading"
+    status(
+      'Checkout criado. Redirecionando...',
+      'ok'
     );
 
-
-    /* vai para o Asaas */
 
     window.location.href =
-      data.checkout.link;
+      d.checkout.link;
 
 
-  }catch(error){
+  }catch(e){
 
-    console.error(error);
-
-
-    showStatus(
-      error.message ||
-      "Erro ao criar pagamento.",
-      "error"
+    status(
+      e.message,
+      'err'
     );
 
+    buy.disabled = false;
 
-    continueButton.disabled = false;
-
-    continueButton.textContent =
-      "CONTINUAR PARA PAGAMENTO";
+    buy.textContent =
+      'CONTINUAR PARA PAGAMENTO';
 
   }
 
-});
+};
 
+
+async function checkReturnedOrder(){
+
+  const params =
+    new URLSearchParams(
+      location.search
+    );
+
+  const id =
+    params.get('order');
+
+  const payment =
+    params.get('payment');
+
+
+  if(!id) return;
+
+
+  orderEl.classList.remove(
+    'hidden'
+  );
+
+  orderEl.textContent =
+    'Consultando status do pedido...';
+
+
+  if(payment === 'success'){
+
+    status(
+      'Pagamento concluído no checkout. Aguardando confirmação do servidor...',
+      'ok'
+    );
+
+  }
+
+  else if(payment === 'cancelled'){
+
+    status(
+      'Pagamento cancelado.',
+      'warn'
+    );
+
+  }
+
+  else if(payment === 'expired'){
+
+    status(
+      'Checkout expirado.',
+      'warn'
+    );
+
+  }
+
+
+  try{
+
+    const r =
+      await fetch(
+        '/api/orders/' +
+        encodeURIComponent(id)
+      );
+
+
+    const d =
+      await r.json();
+
+
+    if(!d.ok){
+
+      throw new Error(
+        d.error
+      );
+
+    }
+
+
+    const o =
+      d.order;
+
+
+    orderEl.innerHTML = `
+
+      <b>Pedido ${o.id}</b><br>
+
+      Produto:
+      ${o.productName}<br>
+
+      Status:
+      ${o.status}<br>
+
+      Entrega:
+      ${o.deliveryStatus}
+
+    `;
+
+
+  }catch(e){
+
+    orderEl.textContent =
+      'Pedido criado, mas ainda não foi possível consultar o status.';
+
+  }
+
+}
+
+
+loadProducts();
+
+checkReturnedOrder();
 
 </script>
 
