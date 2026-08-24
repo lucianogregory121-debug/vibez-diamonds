@@ -1,13 +1,11 @@
-index.html
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta name="theme-color" content="#080511">
-  <meta name="description" content="VIBEZ DIAMONDS - compre seus diamantes com pagamento seguro.">
+  <meta name="theme-color" content="#08050f">
+  <meta name="description" content="VIBEZ DIAMONDS - recarga de diamantes">
 
   <title>VIBEZ DIAMONDS</title>
 
@@ -19,45 +17,55 @@ index.html
     }
 
     :root {
-      --bg: #07050d;
-      --bg2: #10091c;
-      --card: rgba(20, 13, 34, 0.82);
-      --card2: rgba(28, 17, 48, 0.9);
-      --purple: #8b5cf6;
-      --purple2: #a855f7;
-      --purple3: #c084fc;
-      --green: #22c55e;
+      --bg: #07050c;
+      --panel: #110d1d;
+      --panel2: #171025;
+      --purple: #8b45ff;
+      --purple2: #b56cff;
+      --pink: #d946ef;
+      --green: #19e66b;
       --text: #ffffff;
-      --muted: #aaa1ba;
-      --border: rgba(168, 85, 247, 0.22);
-    }
-
-    html {
-      scroll-behavior: smooth;
+      --muted: #aaa2b8;
+      --border: rgba(180, 100, 255, .22);
     }
 
     body {
       min-height: 100vh;
-      background:
-        radial-gradient(circle at 50% -10%, rgba(139, 92, 246, .32), transparent 38%),
-        radial-gradient(circle at 0% 40%, rgba(168, 85, 247, .12), transparent 28%),
-        radial-gradient(circle at 100% 70%, rgba(124, 58, 237, .10), transparent 30%),
-        var(--bg);
       color: var(--text);
       font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at 50% 0%, #32105d 0%, transparent 35%),
+        radial-gradient(circle at 10% 30%, #160d2b 0%, transparent 30%),
+        radial-gradient(circle at 90% 30%, #210b32 0%, transparent 30%),
+        var(--bg);
       overflow-x: hidden;
     }
+
+    /* =========================
+       PARTÍCULAS
+    ========================= */
 
     body::before {
       content: "";
       position: fixed;
       inset: 0;
       pointer-events: none;
-      opacity: .22;
+      opacity: .35;
       background-image:
-        radial-gradient(circle, #ffffff 0 1px, transparent 1.5px);
-      background-size: 90px 90px;
-      mask-image: linear-gradient(to bottom, black, transparent 75%);
+        radial-gradient(circle, #fff 1px, transparent 1px),
+        radial-gradient(circle, #b56cff 1px, transparent 1px);
+      background-size: 90px 90px, 130px 130px;
+      background-position: 0 0, 30px 50px;
+      animation: stars 18s linear infinite;
+    }
+
+    @keyframes stars {
+      from {
+        transform: translateY(0);
+      }
+      to {
+        transform: translateY(90px);
+      }
     }
 
     /* =========================
@@ -65,36 +73,48 @@ index.html
     ========================= */
 
     header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      height: 68px;
+      width: 100%;
+      height: 70px;
+      padding: 0 6%;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 5%;
-      background: rgba(7, 5, 13, .78);
-      backdrop-filter: blur(18px);
-      border-bottom: 1px solid rgba(255,255,255,.06);
+      position: relative;
+      z-index: 20;
+      background: rgba(5, 3, 10, .78);
+      border-bottom: 1px solid rgba(174, 91, 255, .18);
+      backdrop-filter: blur(15px);
     }
 
     .logo {
       font-size: 21px;
       font-weight: 900;
       letter-spacing: .5px;
-      background: linear-gradient(90deg, #fff, #c084fc, #8b5cf6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
     }
 
-    .header-button {
-      border: 1px solid rgba(168,85,247,.4);
-      background: rgba(139,92,246,.12);
-      color: #e9d5ff;
-      padding: 9px 15px;
-      border-radius: 999px;
+    .logo span {
+      color: var(--purple2);
+      text-shadow: 0 0 18px #914cff;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 13px;
+      border: 1px solid rgba(139, 92, 246, .35);
+      border-radius: 30px;
+      background: rgba(80, 35, 130, .18);
+      color: #ddd4e8;
       font-size: 12px;
-      font-weight: bold;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #20e86c;
+      box-shadow: 0 0 12px #20e86c;
     }
 
     /* =========================
@@ -102,144 +122,289 @@ index.html
     ========================= */
 
     .hero {
+      min-height: 390px;
       position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       text-align: center;
-      padding: 58px 20px 30px;
-      max-width: 1000px;
-      margin: auto;
+      padding: 70px 20px 45px;
+      border-bottom: 1px solid rgba(174, 91, 255, .15);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      width: 750px;
+      height: 750px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(135, 54, 255, .27), transparent 65%);
+      top: -430px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      max-width: 850px;
     }
 
     .hero-badge {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
+      gap: 8px;
       padding: 8px 14px;
-      border: 1px solid rgba(192,132,252,.3);
-      border-radius: 999px;
-      background: rgba(139,92,246,.1);
-      color: #ddd6fe;
+      border: 1px solid rgba(181, 108, 255, .35);
+      border-radius: 30px;
+      background: rgba(139, 69, 255, .10);
+      color: #d9c6ff;
       font-size: 12px;
       font-weight: bold;
-      margin-bottom: 20px;
-      box-shadow: 0 0 25px rgba(139,92,246,.12);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 18px;
+      box-shadow: 0 0 25px rgba(139, 69, 255, .12);
     }
 
     .hero h1 {
-      font-size: clamp(40px, 8vw, 76px);
-      line-height: .98;
-      font-weight: 950;
+      font-size: clamp(42px, 8vw, 82px);
+      line-height: .95;
+      font-weight: 1000;
       letter-spacing: -3px;
-      margin-bottom: 18px;
+      text-transform: uppercase;
+      text-shadow:
+        0 4px 30px rgba(0,0,0,.8),
+        0 0 35px rgba(139, 69, 255, .28);
     }
 
     .hero h1 span {
-      background: linear-gradient(90deg, #a78bfa, #e9d5ff, #8b5cf6);
+      background: linear-gradient(90deg, #ffffff, #bd80ff, #8b45ff);
       -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 20px rgba(168,85,247,.2));
+      background-clip: text;
+      color: transparent;
     }
 
     .hero p {
+      margin: 22px auto 0;
       max-width: 650px;
-      margin: auto;
-      color: var(--muted);
-      font-size: 15px;
+      color: #b8afc4;
       line-height: 1.6;
+      font-size: 15px;
     }
 
     /* =========================
-       MAIN
+       PERSONAGENS ATRÁS DO BANNER
     ========================= */
 
-    main {
-      width: min(1100px, 94%);
-      margin: 0 auto 60px;
+    .fighter {
+      position: absolute;
+      bottom: -20px;
+      width: 220px;
+      height: 330px;
+      opacity: .48;
+      filter: drop-shadow(0 0 25px rgba(139,69,255,.25));
+      z-index: 2;
     }
 
-    .shop {
-      position: relative;
-      overflow: hidden;
-      padding: 24px;
-      border: 1px solid var(--border);
-      border-radius: 28px;
+    .fighter.left {
+      left: 2%;
+      transform: scaleX(-1) rotate(-4deg);
+    }
+
+    .fighter.right {
+      right: 2%;
+      transform: rotate(4deg);
+    }
+
+    .fighter .head {
+      position: absolute;
+      width: 54px;
+      height: 65px;
+      border-radius: 45% 45% 40% 40%;
+      background: linear-gradient(135deg, #282238, #08060d);
+      top: 30px;
+      left: 83px;
+      box-shadow: 0 0 30px rgba(160,80,255,.2);
+    }
+
+    .fighter .hair {
+      position: absolute;
+      width: 65px;
+      height: 42px;
+      border-radius: 60% 60% 20% 20%;
+      background: #09070d;
+      top: 18px;
+      left: 77px;
+      transform: rotate(-8deg);
+    }
+
+    .fighter .body {
+      position: absolute;
+      width: 105px;
+      height: 155px;
+      top: 92px;
+      left: 57px;
+      border-radius: 35px 35px 18px 18px;
       background:
-        linear-gradient(145deg, rgba(27,17,44,.92), rgba(12,8,20,.94));
-      box-shadow:
-        0 30px 90px rgba(0,0,0,.42),
-        inset 0 1px rgba(255,255,255,.05);
+        linear-gradient(90deg, #0a0710, #302047 50%, #0a0710);
+      border: 1px solid rgba(181,108,255,.18);
     }
 
-    .shop::before {
+    .fighter .vest {
+      position: absolute;
+      width: 75px;
+      height: 100px;
+      top: 105px;
+      left: 72px;
+      border-radius: 20px;
+      background: linear-gradient(90deg, #0a0810, #191323, #08060d);
+    }
+
+    .fighter .arm {
+      position: absolute;
+      width: 32px;
+      height: 145px;
+      background: linear-gradient(#171020, #07050b);
+      border-radius: 20px;
+      top: 105px;
+    }
+
+    .fighter .arm.one {
+      left: 35px;
+      transform: rotate(24deg);
+    }
+
+    .fighter .arm.two {
+      right: 35px;
+      transform: rotate(-27deg);
+    }
+
+    .fighter .leg {
+      position: absolute;
+      width: 43px;
+      height: 125px;
+      background: linear-gradient(#15101e, #050409);
+      border-radius: 22px;
+      top: 225px;
+    }
+
+    .fighter .leg.one {
+      left: 66px;
+      transform: rotate(4deg);
+    }
+
+    .fighter .leg.two {
+      left: 116px;
+      transform: rotate(-5deg);
+    }
+
+    .weapon {
+      position: absolute;
+      width: 130px;
+      height: 5px;
+      background: linear-gradient(90deg, #8b45ff, #fff, #8b45ff);
+      border-radius: 10px;
+      top: 155px;
+      left: 85px;
+      transform: rotate(-35deg);
+      box-shadow: 0 0 15px #9c4dff;
+    }
+
+    .weapon::after {
       content: "";
       position: absolute;
-      width: 300px;
-      height: 300px;
-      top: -180px;
-      right: -100px;
+      width: 17px;
+      height: 17px;
+      border: 3px solid #8b45ff;
       border-radius: 50%;
-      background: rgba(139,92,246,.14);
-      filter: blur(30px);
-      pointer-events: none;
+      left: -10px;
+      top: -6px;
     }
 
-    .shop-top {
+    /* =========================
+       CONTAINER
+    ========================= */
+
+    .container {
+      width: min(1100px, 94%);
+      margin: -5px auto 70px;
+      position: relative;
+      z-index: 15;
+    }
+
+    .shop-panel {
+      padding: 24px;
+      border-radius: 25px;
+      background:
+        linear-gradient(145deg, rgba(25,18,39,.96), rgba(10,8,17,.97));
+      border: 1px solid var(--border);
+      box-shadow:
+        0 25px 90px rgba(0,0,0,.55),
+        0 0 50px rgba(112,44,180,.08);
+    }
+
+    /* =========================
+       FORM
+    ========================= */
+
+    .top-form {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
-      margin-bottom: 24px;
+      margin-bottom: 25px;
     }
 
-    .field-box {
-      position: relative;
-    }
-
-    .field-label {
+    .field label {
       display: block;
       margin-bottom: 8px;
-      color: #d8d0e5;
+      color: #aaa1b9;
       font-size: 12px;
       font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: .7px;
     }
 
-    .field {
+    .field input {
       width: 100%;
-      height: 52px;
-      border: 1px solid rgba(255,255,255,.09);
-      outline: none;
-      border-radius: 14px;
+      height: 50px;
       padding: 0 15px;
-      background: rgba(4,3,9,.72);
       color: #fff;
-      font-size: 15px;
+      background: #09070e;
+      border: 1px solid #2b213d;
+      border-radius: 13px;
+      outline: none;
       transition: .2s;
+      font-size: 14px;
     }
 
-    .field::placeholder {
-      color: #686171;
-    }
-
-    .field:focus {
-      border-color: rgba(168,85,247,.7);
-      box-shadow: 0 0 0 4px rgba(139,92,246,.10);
+    .field input:focus {
+      border-color: #8b45ff;
+      box-shadow: 0 0 0 3px rgba(139,69,255,.10);
     }
 
     .selected-box {
-      height: 52px;
+      min-height: 50px;
       display: flex;
       align-items: center;
       padding: 0 15px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(4,3,9,.52);
-      color: #9f96ad;
+      color: #cfc4dd;
+      background: #09070e;
+      border: 1px solid #2b213d;
+      border-radius: 13px;
       font-size: 14px;
     }
 
     .selected-box.active {
-      color: #e9d5ff;
-      border-color: rgba(168,85,247,.45);
-      background: rgba(139,92,246,.08);
+      border-color: #8b45ff;
+      color: #fff;
+      box-shadow: 0 0 18px rgba(139,69,255,.10);
     }
+
+    /* =========================
+       TÍTULO
+    ========================= */
 
     .section-title {
       display: flex;
@@ -249,181 +414,232 @@ index.html
     }
 
     .section-title h2 {
-      font-size: 18px;
+      font-size: 17px;
     }
 
     .section-title span {
-      color: #8f879b;
-      font-size: 11px;
+      color: #9c91a9;
+      font-size: 12px;
     }
 
     /* =========================
-       PRODUCTS
+       PRODUTOS
     ========================= */
 
-    .products {
+    #products {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
+      gap: 13px;
     }
 
     .product {
       position: relative;
-      min-height: 155px;
       padding: 18px;
-      border-radius: 19px;
-      border: 1px solid rgba(255,255,255,.075);
+      min-height: 150px;
+      overflow: hidden;
+      border-radius: 17px;
       background:
-        linear-gradient(145deg, rgba(25,17,38,.92), rgba(11,8,18,.95));
-      transition:
-        transform .2s ease,
-        border-color .2s ease,
-        box-shadow .2s ease;
+        linear-gradient(145deg, #151020, #0d0a14);
+      border: 1px solid #29203a;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+    }
+
+    .product::before {
+      content: "";
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: #8b45ff;
+      filter: blur(70px);
+      opacity: .08;
+      top: -60px;
+      right: -40px;
     }
 
     .product:hover {
       transform: translateY(-4px);
-      border-color: rgba(168,85,247,.45);
-      box-shadow: 0 15px 35px rgba(0,0,0,.28);
+      border-color: rgba(163, 85, 255, .55);
+      box-shadow: 0 12px 35px rgba(0,0,0,.35);
     }
 
     .product.selected {
-      border-color: #9b6cff;
-      background:
-        linear-gradient(145deg, rgba(48,27,76,.9), rgba(15,9,25,.96));
+      border-color: #9b55ff;
       box-shadow:
-        0 0 0 1px rgba(168,85,247,.2),
-        0 18px 40px rgba(99,50,180,.18);
-    }
-
-    .popular {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 5px 8px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, #7c3aed, #a855f7);
-      color: white;
-      font-size: 9px;
-      font-weight: 900;
-      letter-spacing: .4px;
-      box-shadow: 0 5px 20px rgba(139,92,246,.3);
+        0 0 0 1px #9b55ff,
+        0 10px 35px rgba(139,69,255,.16);
     }
 
     .diamond-icon {
-      font-size: 27px;
-      margin-bottom: 5px;
-      filter: drop-shadow(0 0 8px rgba(96,165,250,.3));
+      font-size: 23px;
     }
 
     .diamond-count {
-      font-size: 24px;
+      margin-top: 5px;
+      font-size: 23px;
       font-weight: 900;
-      letter-spacing: -.5px;
     }
 
     .price {
-      color: #c4b5fd;
+      margin-top: 5px;
+      color: #b9a9c9;
       font-size: 13px;
-      font-weight: bold;
-      margin-top: 4px;
     }
 
-    .economy {
-      display: inline-block;
-      margin-top: 7px;
-      color: #86efac;
-      font-size: 10px;
-      font-weight: bold;
-    }
-
-    .select-button {
+    .choose {
       width: 100%;
-      height: 42px;
-      margin-top: 13px;
+      height: 40px;
+      margin-top: 15px;
       border: 0;
-      border-radius: 11px;
+      border-radius: 10px;
       cursor: pointer;
-      background: linear-gradient(100deg, #8b5cf6, #7c3aed);
       color: white;
       font-weight: 900;
-      font-size: 13px;
-      box-shadow: 0 8px 22px rgba(124,58,237,.22);
+      background: linear-gradient(90deg, #7135d7, #984cff);
+      box-shadow: 0 6px 18px rgba(139,69,255,.18);
       transition: .2s;
     }
 
-    .select-button:hover {
+    .choose:hover {
       filter: brightness(1.12);
-      transform: translateY(-1px);
     }
 
-    .product.selected .select-button {
-      background: linear-gradient(100deg, #a78bfa, #8b5cf6);
+    .product.selected .choose {
+      background: linear-gradient(90deg, #a65cff, #d06cff);
     }
 
     /* =========================
-       PAYMENT
+       PAGAMENTO
     ========================= */
 
-    .payment-area {
-      margin-top: 24px;
-    }
-
-    .payment-title {
-      color: #ddd6e7;
-      font-size: 13px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    .payment-methods {
+    .payment {
       display: flex;
       gap: 9px;
-      margin-bottom: 14px;
+      margin-top: 18px;
     }
 
-    .payment {
+    .payment button {
+      border: 1px solid #31253f;
+      background: #0c0912;
+      color: #a9a0b3;
+      padding: 10px 17px;
+      border-radius: 10px;
       cursor: pointer;
-      padding: 10px 16px;
-      border-radius: 11px;
-      border: 1px solid rgba(255,255,255,.1);
-      background: rgba(255,255,255,.025);
-      color: #aaa1b3;
       font-weight: bold;
-      font-size: 12px;
-      transition: .2s;
     }
 
-    .payment.active {
-      border-color: #9b6cff;
-      color: #e9d5ff;
-      background: rgba(139,92,246,.12);
+    .payment button.active {
+      color: #fff;
+      border-color: #a35bff;
+      background: rgba(139,69,255,.18);
+      box-shadow: 0 0 18px rgba(139,69,255,.10);
     }
 
-    .continue {
+    /* =========================
+       BOTÃO CONTINUAR
+    ========================= */
+
+    #continue {
       width: 100%;
-      height: 55px;
+      height: 57px;
+      margin-top: 20px;
       border: 0;
       border-radius: 14px;
       cursor: pointer;
-      color: #04150a;
-      background: linear-gradient(90deg, #22c55e, #16a34a);
-      font-size: 14px;
-      font-weight: 950;
-      box-shadow: 0 12px 30px rgba(34,197,94,.14);
+      color: #06110a;
+      background: linear-gradient(90deg, #15d95f, #29ed73);
+      font-size: 15px;
+      font-weight: 1000;
+      box-shadow: 0 8px 30px rgba(25,230,107,.14);
       transition: .2s;
     }
 
-    .continue:hover {
+    #continue:hover {
       transform: translateY(-2px);
-      filter: brightness(1.08);
+      filter: brightness(1.05);
     }
 
-    .continue:disabled {
-      opacity: .45;
+    #continue:disabled {
+      opacity: .5;
       cursor: not-allowed;
       transform: none;
-      filter: grayscale(.4);
+    }
+
+    /* =========================
+       SEGURANÇA
+    ========================= */
+
+    .security {
+      margin-top: 15px;
+      padding: 17px;
+      border-radius: 14px;
+      background: rgba(104,53,155,.09);
+      border: 1px solid rgba(139,69,255,.15);
+      color: #a9a0b5;
+      font-size: 12px;
+      line-height: 1.65;
+    }
+
+    .security strong {
+      color: #d8c8e8;
+    }
+
+    /* =========================
+       MODAL
+    ========================= */
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(8px);
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-box {
+      width: min(450px, 100%);
+      padding: 28px;
+      border-radius: 22px;
+      background: #120d1d;
+      border: 1px solid rgba(173,91,255,.3);
+      box-shadow: 0 25px 90px #000;
+      text-align: center;
+    }
+
+    .modal-icon {
+      font-size: 45px;
+      margin-bottom: 12px;
+    }
+
+    .modal h3 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .modal p {
+      color: #aaa0b5;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .close {
+      width: 100%;
+      height: 45px;
+      margin-top: 20px;
+      border: 0;
+      border-radius: 11px;
+      cursor: pointer;
+      background: #8b45ff;
+      color: white;
+      font-weight: bold;
     }
 
     /* =========================
@@ -435,8 +651,8 @@ index.html
       align-items: center;
       justify-content: center;
       gap: 10px;
-      margin-top: 14px;
-      color: #c4b5fd;
+      margin-top: 15px;
+      color: #bca9ce;
       font-size: 13px;
     }
 
@@ -445,98 +661,18 @@ index.html
     }
 
     .spinner {
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(255,255,255,.2);
-      border-top-color: #a78bfa;
+      width: 17px;
+      height: 17px;
+      border: 2px solid #3a294d;
+      border-top-color: #a35cff;
       border-radius: 50%;
-      animation: spin .8s linear infinite;
+      animation: spin .7s linear infinite;
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* =========================
-       SECURITY
-    ========================= */
-
-    .trust {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 22px;
-    }
-
-    .trust-card {
-      padding: 15px;
-      text-align: center;
-      border-radius: 14px;
-      background: rgba(255,255,255,.025);
-      border: 1px solid rgba(255,255,255,.055);
-    }
-
-    .trust-card strong {
-      display: block;
-      font-size: 12px;
-      margin-bottom: 4px;
-    }
-
-    .trust-card span {
-      color: #8f879b;
-      font-size: 10px;
-      line-height: 1.4;
-    }
-
-    /* =========================
-       INFO
-    ========================= */
-
-    .info {
-      margin-top: 16px;
-      padding: 17px;
-      border-radius: 15px;
-      border: 1px solid rgba(168,85,247,.13);
-      background: rgba(139,92,246,.045);
-      color: #91889e;
-      font-size: 11px;
-      line-height: 1.65;
-    }
-
-    .info strong {
-      color: #c4b5fd;
-    }
-
-    /* =========================
-       TOAST
-    ========================= */
-
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 25px;
-      z-index: 100;
-      width: min(90%, 430px);
-      padding: 15px 18px;
-      transform: translate(-50%, 130px);
-      border-radius: 14px;
-      background: #1b1228;
-      border: 1px solid rgba(168,85,247,.35);
-      box-shadow: 0 20px 50px rgba(0,0,0,.5);
-      color: #fff;
-      font-size: 13px;
-      text-align: center;
-      opacity: 0;
-      transition: .3s;
-    }
-
-    .toast.show {
-      transform: translate(-50%, 0);
-      opacity: 1;
-    }
-
-    .toast.error {
-      border-color: rgba(239,68,68,.4);
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     /* =========================
@@ -544,88 +680,100 @@ index.html
     ========================= */
 
     footer {
-      padding: 20px;
+      padding: 0 20px 30px;
       text-align: center;
-      color: #625a6c;
-      font-size: 10px;
+      color: #61596b;
+      font-size: 11px;
     }
 
     /* =========================
        MOBILE
     ========================= */
 
-    @media (max-width: 720px) {
+    @media (max-width: 750px) {
 
       header {
-        height: 60px;
+        height: 62px;
         padding: 0 18px;
       }
 
       .logo {
-        font-size: 18px;
+        font-size: 17px;
+      }
+
+      .status {
+        font-size: 10px;
+        padding: 7px 10px;
       }
 
       .hero {
-        padding: 42px 16px 25px;
+        min-height: 390px;
+        padding-top: 70px;
       }
 
       .hero h1 {
+        font-size: clamp(39px, 12vw, 62px);
         letter-spacing: -2px;
       }
 
       .hero p {
         font-size: 13px;
+        max-width: 340px;
       }
 
-      main {
+      .fighter {
+        opacity: .25;
+        transform: scale(.75);
+      }
+
+      .fighter.left {
+        left: -65px;
+      }
+
+      .fighter.right {
+        right: -65px;
+      }
+
+      .container {
         width: 94%;
       }
 
-      .shop {
-        padding: 16px;
-        border-radius: 22px;
+      .shop-panel {
+        padding: 15px;
+        border-radius: 20px;
       }
 
-      .shop-top {
+      .top-form {
         grid-template-columns: 1fr;
         gap: 12px;
       }
 
-      .products {
+      #products {
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        gap: 9px;
       }
 
       .product {
-        min-height: 148px;
-        padding: 14px;
+        padding: 13px;
+        min-height: 145px;
       }
 
       .diamond-count {
-        font-size: 21px;
+        font-size: 20px;
       }
 
-      .select-button {
-        height: 40px;
+      .choose {
         font-size: 12px;
-      }
-
-      .trust {
-        grid-template-columns: 1fr;
-      }
-
-      .trust-card {
-        text-align: left;
       }
     }
 
     @media (max-width: 380px) {
-      .products {
+      #products {
         grid-template-columns: 1fr;
       }
 
-      .product {
-        min-height: auto;
+      .hero h1 {
+        font-size: 38px;
       }
     }
   </style>
@@ -638,8 +786,14 @@ index.html
   ========================== -->
 
   <header>
-    <div class="logo">💎 VIBEZ DIAMONDS</div>
-    <div class="header-button">🔒 Loja segura</div>
+    <div class="logo">
+      VIBEZ <span>DIAMONDS</span>
+    </div>
+
+    <div class="status">
+      <span class="status-dot"></span>
+      Loja online
+    </div>
   </header>
 
 
@@ -649,363 +803,203 @@ index.html
 
   <section class="hero">
 
-    <div class="hero-badge">
-      ✨ ENTREGA DE DIAMANTES
+    <!-- Personagem esquerdo -->
+    <div class="fighter left">
+      <div class="hair"></div>
+      <div class="head"></div>
+      <div class="body"></div>
+      <div class="vest"></div>
+      <div class="arm one"></div>
+      <div class="arm two"></div>
+      <div class="leg one"></div>
+      <div class="leg two"></div>
+      <div class="weapon"></div>
     </div>
 
-    <h1>
-      Compre seus<br>
-      <span>diamantes</span>
-    </h1>
+    <!-- Personagem direito -->
+    <div class="fighter right">
+      <div class="hair"></div>
+      <div class="head"></div>
+      <div class="body"></div>
+      <div class="vest"></div>
+      <div class="arm one"></div>
+      <div class="arm two"></div>
+      <div class="leg one"></div>
+      <div class="leg two"></div>
+      <div class="weapon"></div>
+    </div>
 
-    <p>
-      Escolha seu pacote, informe o ID do jogador
-      e prossiga para o pagamento de forma rápida
-      e segura.
-    </p>
+    <div class="hero-content">
+
+      <div class="hero-badge">
+        ⚡ RECARGA RÁPIDA • PAGAMENTO SEGURO
+      </div>
+
+      <h1>
+        COMPRE SEUS<br>
+        <span>DIAMANTES</span>
+      </h1>
+
+      <p>
+        Escolha seu pacote, informe o ID do jogador
+        e continue para o pagamento seguro.
+      </p>
+
+    </div>
 
   </section>
 
 
   <!-- =========================
-       SHOP
+       LOJA
   ========================== -->
 
-  <main>
+  <main class="container">
 
-    <section class="shop">
+    <div class="shop-panel">
 
-      <div class="shop-top">
+      <div class="top-form">
 
-        <div class="field-box">
-
-          <label class="field-label">
+        <div class="field">
+          <label for="playerId">
             ID do jogador
           </label>
 
           <input
             id="playerId"
-            class="field"
             type="text"
             inputmode="numeric"
             maxlength="15"
-            placeholder="Digite o ID do jogador"
+            placeholder="Digite o ID do Free Fire"
             autocomplete="off"
           >
-
         </div>
 
 
-        <div class="field-box">
-
-          <label class="field-label">
+        <div class="field">
+          <label>
             Pacote selecionado
           </label>
 
           <div
-            id="selectedInfo"
+            id="selectedProduct"
             class="selected-box"
           >
             Nenhum pacote selecionado
           </div>
-
         </div>
 
       </div>
 
 
       <div class="section-title">
-
-        <h2>
-          💎 Escolha seu pacote
-        </h2>
+        <h2>💎 Escolha seu pacote</h2>
 
         <span>
-          Selecione uma opção abaixo
+          Selecione uma opção
         </span>
-
       </div>
 
 
-      <!-- =========================
-           PRODUCTS
-      ========================== -->
+      <!-- Produtos carregados pelo servidor -->
+      <div id="products"></div>
 
-      <div class="products">
 
-        <!-- 100 -->
+      <!-- Método de pagamento -->
 
-        <article
-          class="product"
-          data-product="d100"
-          data-diamonds="100"
-          data-price="5.00"
-        >
-
-          <div class="diamond-icon">💎</div>
-
-          <div class="diamond-count">
-            100
-          </div>
-
-          <div class="price">
-            R$ 5,00
-          </div>
-
-          <button
-            class="select-button"
-            type="button"
-          >
-            Selecionar
-          </button>
-
-        </article>
-
-
-        <!-- 310 -->
-
-        <article
-          class="product"
-          data-product="d310"
-          data-diamonds="310"
-          data-price="12.99"
-        >
-
-          <div class="popular">
-            MAIS VENDIDO
-          </div>
-
-          <div class="diamond-icon">💎</div>
-
-          <div class="diamond-count">
-            310
-          </div>
-
-          <div class="price">
-            R$ 12,99
-          </div>
-
-          <div class="economy">
-            ⭐ Ótimo custo-benefício
-          </div>
-
-          <button
-            class="select-button"
-            type="button"
-          >
-            Selecionar
-          </button>
-
-        </article>
-
-
-        <!-- 520 -->
-
-        <article
-          class="product"
-          data-product="d520"
-          data-diamonds="520"
-          data-price="19.99"
-        >
-
-          <div class="diamond-icon">💎</div>
-
-          <div class="diamond-count">
-            520
-          </div>
-
-          <div class="price">
-            R$ 19,99
-          </div>
-
-          <div class="economy">
-            🔥 Pacote popular
-          </div>
-
-          <button
-            class="select-button"
-            type="button"
-          >
-            Selecionar
-          </button>
-
-        </article>
-
-
-        <!-- 1060 -->
-
-        <article
-          class="product"
-          data-product="d1060"
-          data-diamonds="1060"
-          data-price="39.99"
-        >
-
-          <div class="diamond-icon">💎</div>
-
-          <div class="diamond-count">
-            1.060
-          </div>
-
-          <div class="price">
-            R$ 39,99
-          </div>
-
-          <div class="economy">
-            💜 Mais diamantes
-          </div>
-
-          <button
-            class="select-button"
-            type="button"
-          >
-            Selecionar
-          </button>
-
-        </article>
-
-
-        <!-- 2180 -->
-
-        <article
-          class="product"
-          data-product="d2180"
-          data-diamonds="2180"
-          data-price="79.99"
-        >
-
-          <div class="diamond-icon">💎</div>
-
-          <div class="diamond-count">
-            2.180
-          </div>
-
-          <div class="price">
-            R$ 79,99
-          </div>
-
-          <div class="economy">
-            👑 Pacote premium
-          </div>
-
-          <button
-            class="select-button"
-            type="button"
-          >
-            Selecionar
-          </button>
-
-        </article>
-
-
-        <!-- 5600 -->
-
-        <article
-          class="product"
-          data-product="d5600"
-          data-diamonds="5600"
-          data-price="199.99"
-        >
-
-          <div class="diamond-icon">💎</div>
-
-          <div class="diamond-count">
-            5.600
-          </div>
-
-          <div class="price">
-            R$ 199,99
-          </div>
-
-          <div class="economy">
-            👑 Pacote máximo
-          </div>
-
-          <button
-            class="select-button"
-            type="button"
-          >
-            Selecionar
-          </button>
-
-        </article>
-
-      </div>
-
-
-      <!-- =========================
-           PAYMENT
-      ========================== -->
-
-      <div class="payment-area">
-
-        <div class="payment-title">
-          Forma de pagamento
-        </div>
-
-        <div class="payment-methods">
-
-          <button
-            id="pixButton"
-            class="payment active"
-            type="button"
-          >
-            ⚡ PIX
-          </button>
-
-          <button
-            id="cardButton"
-            class="payment"
-            type="button"
-          >
-            💳 Cartão
-          </button>
-
-        </div>
-
+      <div class="payment">
 
         <button
-          id="continueButton"
-          class="continue"
           type="button"
-          disabled
+          id="pixBtn"
+          class="active"
+          onclick="selectPayment('pix')"
         >
-          Escolha um pacote para continuar
+          PIX
         </button>
 
-
-        <div
-          id="loading"
-          class="loading"
+        <button
+          type="button"
+          id="cardBtn"
+          onclick="selectPayment('card')"
         >
-          <div class="spinner"></div>
-          Criando seu pagamento seguro...
-        </div>
+          💳 Cartão
+        </button>
 
       </div>
 
 
-      <!-- =========================
-           TRUST
-      ========================== -->
+      <!-- Continuar -->
 
-      <div class="trust">
+      <button
+        id="continue"
+        type="button"
+        onclick="createOrder()"
+      >
+        CONTINUAR PARA PAGAMENTO
+      </button>
 
-        <div class="trust-card">
-          <strong>🔒 Pagamento seguro</strong>
-          <span>
-            O pagamento é realizado através do Checkout do Asaas.
-          </span>
-        </div>
 
-        <div class="trust-card">
-          <strong>⚡ PIX rápido</strong>
-          <span>
-            Escolha PIX para realizar o pagamento de forma prática.
-          </span>
-        </div>
+      <div
+        id="loading"
+        class="loading"
+      >
+        <div class="spinner"></div>
+        Criando checkout seguro...
+      </div>
 
-        <div class="trust-card">
-          <strong>💳 Cartão</strong>
-          <span>
-            Também é poss
+
+      <!-- Segurança -->
+
+      <div class="security">
+
+        🔒 <strong>Pagamento seguro</strong>
+
+        <br><br>
+
+        Você será direcionado para uma página
+        segura do <strong>Asaas</strong> para concluir
+        o pagamento.
+
+        <br><br>
+
+        <strong>Importante:</strong>
+        criar o Checkout não significa que o pagamento
+        foi confirmado. A entrega dos diamantes somente
+        deve ocorrer após a confirmação financeira.
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <footer>
+    VIBEZ DIAMONDS • Pagamento seguro • © 2026
+  </footer>
+
+
+  <!-- =========================
+       MODAL
+  ========================== -->
+
+  <div
+    id="modal"
+    class="modal"
+  >
+
+    <div class="modal-box">
+
+      <div
+        id="modalIcon"
+        class="modal-icon"
+      >
+        ⚠️
+      </div>
+
+      <h3 id="modalTitle">
+        Atenção
+      </h3>
+
+   
