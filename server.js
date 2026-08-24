@@ -3,9 +3,19 @@ require("dotenv").config();
 const express = require("express");
 const helmet = require("helmet");
 const path = require("path");
+const crypto = require("crypto");
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
+
+const ASAAS_API_URL =
+  process.env.ASAAS_API_URL ||
+  "https://api.asaas.com/v3";
+
+const FAZER_API_URL =
+  process.env.FAZER_API_URL ||
+  "https://api.fzr.cards/api/v2";
 
 app.set("trust proxy", 1);
 
@@ -15,25 +25,24 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: "1mb" }));
-
 /*
-  IMPORTANTE:
-  Seu index.html está na raiz do GitHub.
-  Por isso usamos __dirname aqui.
+  Guardamos o corpo bruto para que o webhook
+  do Asaas possa ser auditado/validado.
 */
+app.use(
+  express.json({
+    limit: "1mb",
+    verify: (req, res, buf) => {
+      req.rawBody = buf;
+    }
+  })
+);
+
 app.use(express.static(__dirname));
 
-/* =========================
-   ASAAS
-========================= */
-
-const ASAAS_API_URL =
-  process.env.ASAAS_API_URL || "https://api.asaas.com/v3";
-
-/* =========================
-   PRODUTOS
-========================= */
+/* =========================================================
+   PRODUTOS DA VIBEZ
+========================================================= */
 
 const products = [
   {
@@ -68,12 +77,27 @@ const products = [
   }
 ];
 
-/* =========================
-   FUNÇÕES
-========================= */
+/* =========================================================
+   PEDIDOS
+========================================================= */
+
+/*
+  IMPORTANTE:
+  Este armazenamento é temporário.
+  Para produção real, recomendamos PostgreSQL.
+*/
+const orders = new Map();
+
+/* =========================================================
+   CONFIGURAÇÃO
+========================================================= */
 
 function asaasConfigured() {
   return Boolean(process.env.ASAAS_API_KEY);
+}
+
+function fazerConfigured() {
+  return Boolean(process.env.FAZER_API_KEY);
 }
 
 function getBaseUrl(req) {
@@ -84,31 +108,14 @@ function getBaseUrl(req) {
   return url.replace(/\/$/, "");
 }
 
-function getAsaasCheckoutLink(checkout) {
-  if (checkout && checkout.link) {
-    return checkout.link;
-  }
-
-  if (!checkout || !checkout.id) {
-    return null;
-  }
-
-  const isSandbox =
-    ASAAS_API_URL.includes("sandbox");
-
-  const domain = isSandbox
-    ? "https://sandbox.asaas.com"
-    : "https://asaas.com";
-
-  return `${domain}/checkoutSession/show?id=${encodeURIComponent(
-    checkout.id
-  )}`;
-}
+/* =========================================================
+   ASAAS REQUEST
+========================================================= */
 
 async function asaasRequest(endpoint, options = {}) {
   if (!process.env.ASAAS_API_KEY) {
     throw new Error(
-      "ASAAS_API_KEY não configurada no Render."
+      "ASAAS_API_KEY não configurada."
     );
   }
 
@@ -120,7 +127,9 @@ async function asaasRequest(endpoint, options = {}) {
       headers: {
         accept: "application/json",
         "content-type": "application/json",
-        access_token: process.env.ASAAS_API_KEY,
+        access_token:
+          process.env.ASAAS_API_KEY,
+
         ...(options.headers || {})
       }
     }
@@ -131,7 +140,9 @@ async function asaasRequest(endpoint, options = {}) {
   let data = {};
 
   try {
-    data = text ? JSON.parse(text) : {};
+    data = text
+      ? JSON.parse(text)
+      : {};
   } catch {
     data = {
       raw: text
@@ -140,17 +151,20 @@ async function asaasRequest(endpoint, options = {}) {
 
   if (!response.ok) {
     console.error(
-      "Erro retornado pelo Asaas:",
+      "ASAAS ERROR:",
       response.status,
       data
     );
 
     const message =
       data?.errors
-        ?.map?.((error) => error.description)
+        ?.map?.(
+          error =>
+            error.description
+        )
         .join(" ") ||
       data?.message ||
-      "Erro retornado pelo Asaas.";
+      "Erro na API do Asaas.";
 
     throw new Error(message);
   }
@@ -158,234 +172,412 @@ async function asaasRequest(endpoint, options = {}) {
   return data;
 }
 
-/* =========================
-   CONFIGURAÇÃO
-========================= */
+/* =========================================================
+   FAZERCARDS REQUEST
+========================================================= */
 
-app.get("/api/config", (req, res) => {
-  res.json({
-    storeName:
-      process.env.STORE_NAME ||
-      "VIBEZ DIAMONDS",
+async function fazerRequest(
+  endpoint,
+  options = {}
+) {
+  if (!process.env.FAZER_API_KEY) {
+    throw new Error(
+      "FAZER_API_KEY não configurada."
+    );
+  }
 
-    asaasConfigured:
-      asaasConfigured(),
+  const response = await fetch(
+    `${FAZER_API_URL}${endpoint}`,
+    {
+      ...options,
 
-    supplierConfigured:
-      Boolean(
-        process.env.SUPPLIER_API_URL &&
-        process.env.SUPPLIER_API_KEY
-      )
-  });
-});
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        "X-API-Key":
+          process.env.FAZER_API_KEY,
 
-/* =========================
-   PRODUTOS
-========================= */
+        ...(options.headers || {})
+      }
+    }
+  );
 
-app.get("/api/products", (req, res) => {
-  res.json({
-    products
-  });
-});
+  const text = await response.text();
 
-/* =========================
-   CRIAR CHECKOUT
-========================= */
+  let data = {};
 
-app.post("/api/orders", async (req, res) => {
   try {
-    const {
-      playerId,
-      productId,
-      paymentMethod
-    } = req.body;
+    data = text
+      ? JSON.parse(text)
+      : {};
+  } catch {
+    data = {
+      raw: text
+    };
+  }
 
-    /* ---------- validação básica ---------- */
-
-    if (
-      !playerId ||
-      !productId ||
-      !paymentMethod
-    ) {
-      return res.status(400).json({
-        error: "Preencha todos os dados."
-      });
-    }
-
-    /* ---------- ID do jogador ---------- */
-
-    const cleanPlayerId =
-      String(playerId).trim();
-
-    if (!/^\d{5,15}$/.test(cleanPlayerId)) {
-      return res.status(400).json({
-        error:
-          "Digite um ID de jogador válido."
-      });
-    }
-
-    /* ---------- produto ---------- */
-
-    const product = products.find(
-      (item) =>
-        item.id === productId
+  if (!response.ok) {
+    console.error(
+      "FAZERCARDS ERROR:",
+      response.status,
+      data
     );
 
-    if (!product) {
-      return res.status(400).json({
-        error: "Produto inválido."
+    throw new Error(
+      data?.error ||
+      "Erro na API da FazerCards."
+    );
+  }
+
+  return data;
+}
+
+/* =========================================================
+   ASAAS CHECKOUT LINK
+========================================================= */
+
+function getAsaasCheckoutLink(checkout) {
+  if (checkout?.link) {
+    return checkout.link;
+  }
+
+  if (!checkout?.id) {
+    return null;
+  }
+
+  const isSandbox =
+    ASAAS_API_URL.includes("sandbox");
+
+  const domain = isSandbox
+    ? "https://sandbox.asaas.com"
+    : "https://asaas.com";
+
+  return (
+    `${domain}/checkoutSession/show?id=` +
+    encodeURIComponent(checkout.id)
+  );
+}
+
+/* =========================================================
+   CONFIG
+========================================================= */
+
+app.get(
+  "/api/config",
+  (req, res) => {
+    res.json({
+      storeName:
+        process.env.STORE_NAME ||
+        "VIBEZ DIAMONDS",
+
+      asaasConfigured:
+        asaasConfigured(),
+
+      fazerCardsConfigured:
+        fazerConfigured(),
+
+      paymentProvider:
+        "Asaas",
+
+      supplier:
+        "FazerCards"
+    });
+  }
+);
+
+/* =========================================================
+   PRODUTOS
+========================================================= */
+
+app.get(
+  "/api/products",
+  (req, res) => {
+    res.json({
+      products
+    });
+  }
+);
+
+/* =========================================================
+   TESTE DA FAZERCARDS
+========================================================= */
+
+/*
+  NÃO FAZ COMPRA.
+  Apenas consulta as categorias disponíveis.
+*/
+
+app.get(
+  "/api/fazer/test",
+  async (req, res) => {
+    try {
+      if (!fazerConfigured()) {
+        return res.status(500).json({
+          ok: false,
+          error:
+            "FAZER_API_KEY não configurada."
+        });
+      }
+
+      const data =
+        await fazerRequest(
+          "/topups?limit=100"
+        );
+
+      const items =
+        Array.isArray(data.items)
+          ? data.items
+          : [];
+
+      const freeFire =
+        items.filter(item =>
+          String(
+            item.name || ""
+          )
+            .toLowerCase()
+            .includes("free fire")
+        );
+
+      return res.json({
+        ok: true,
+
+        totalCategorias:
+          items.length,
+
+        freeFire,
+
+        message:
+          "Consulta realizada sem criar pedido."
       });
-    }
 
-    /* ---------- pagamento ---------- */
+    } catch (error) {
+      console.error(
+        "Erro no teste FazerCards:",
+        error
+      );
 
-    if (
-      !["pix", "card"].includes(
-        paymentMethod
-      )
-    ) {
-      return res.status(400).json({
-        error:
-          "Forma de pagamento inválida."
-      });
-    }
-
-    /* ---------- Asaas ---------- */
-
-    if (!asaasConfigured()) {
       return res.status(500).json({
+        ok: false,
         error:
-          "O pagamento ainda não está configurado no servidor."
+          error.message
       });
     }
+  }
+);
 
-    /* ---------- pedido ---------- */
+/* =========================================================
+   OFERTAS FREE FIRE
+========================================================= */
 
-    const orderId =
-      "VZ-" +
-      Date.now()
-        .toString(36)
-        .toUpperCase();
+app.get(
+  "/api/fazer/freefire/offers",
+  async (req, res) => {
+    try {
+      const categoryId =
+        String(
+          req.query.category_id ||
+          process.env.FAZER_FREEFIRE_CATEGORY_ID ||
+          ""
+        ).trim();
 
-    /* ---------- método Asaas ---------- */
+      if (!categoryId) {
+        return res.status(400).json({
+          ok: false,
+          error:
+            "Informe category_id ou configure FAZER_FREEFIRE_CATEGORY_ID."
+        });
+      }
 
-    const billingTypes =
-      paymentMethod === "pix"
-        ? ["PIX"]
-        : ["CREDIT_CARD"];
+      const data =
+        await fazerRequest(
+          `/topups/offers?category_id=${encodeURIComponent(
+            categoryId
+          )}`
+        );
 
-    /* ---------- URL do site ---------- */
+      return res.json(data);
 
-    const baseUrl =
-      getBaseUrl(req);
-
-    /* ---------- criar Checkout ---------- */
-
-    const checkout =
-      await asaasRequest(
-        "/checkouts",
-        {
-          method: "POST",
-
-          body: JSON.stringify({
-            billingTypes,
-
-            chargeTypes: [
-              "DETACHED"
-            ],
-
-            minutesToExpire: 60,
-
-            externalReference:
-              `${orderId}|PLAYER:${cleanPlayerId}|PRODUCT:${product.id}`,
-
-            callback: {
-              successUrl:
-                `${baseUrl}/pagamento/sucesso?pedido=${encodeURIComponent(
-                  orderId
-                )}`,
-
-              cancelUrl:
-                `${baseUrl}/pagamento/cancelado?pedido=${encodeURIComponent(
-                  orderId
-                )}`,
-
-              expiredUrl:
-                `${baseUrl}/pagamento/expirado?pedido=${encodeURIComponent(
-                  orderId
-                )}`
-            },
-
-            items: [
-              {
-                externalReference:
-                  product.id,
-
-                name:
-                  `${product.diamonds.toLocaleString(
-                    "pt-BR"
-                  )} Diamantes`,
-
-                description:
-                  `Pedido VIBEZ DIAMONDS - ID ${cleanPlayerId}`,
-
-                quantity: 1,
-
-                value:
-                  product.price
-              }
-            ]
-          })
-        }
+    } catch (error) {
+      console.error(
+        "Erro ao consultar ofertas:",
+        error
       );
 
-    /* ---------- link do Checkout ---------- */
-
-    const checkoutLink =
-      getAsaasCheckoutLink(
-        checkout
-      );
-
-    if (!checkoutLink) {
-      throw new Error(
-        "O Asaas criou o Checkout, mas não retornou o link."
-      );
+      return res.status(500).json({
+        ok: false,
+        error:
+          error.message
+      });
     }
+  }
+);
 
-    console.log(
-      "================================"
-    );
+/* =========================================================
+   VALIDAR ID FREE FIRE
+========================================================= */
 
-    console.log(
-      "CHECKOUT ASAAS CRIADO"
-    );
+app.post(
+  "/api/fazer/freefire/validate",
+  async (req, res) => {
+    try {
+      const categoryId =
+        String(
+          req.body.category_id ||
+          process.env.FAZER_FREEFIRE_CATEGORY_ID ||
+          ""
+        ).trim();
 
-    console.log(
-      "Pedido:",
-      orderId
-    );
+      const playerId =
+        String(
+          req.body.playerId || ""
+        ).trim();
 
-    console.log(
-      "Checkout:",
-      checkout.id
-    );
+      if (!categoryId) {
+        return res.status(400).json({
+          ok: false,
+          error:
+            "Categoria Free Fire não configurada."
+        });
+      }
 
-    console.log(
-      "Status:",
-      checkout.status
-    );
+      if (!/^\d{5,15}$/.test(playerId)) {
+        return res.status(400).json({
+          ok: false,
+          error:
+            "ID de jogador inválido."
+        });
+      }
 
-    console.log(
-      "================================"
-    );
+      const data =
+        await fazerRequest(
+          "/topups/validate-id",
+          {
+            method: "POST",
 
-    /* ---------- resposta ---------- */
+            body: JSON.stringify({
+              category_id:
+                categoryId,
 
-    return res.json({
-      ok: true,
+              fields: {
+                player_id:
+                  playerId
+              }
+            })
+          }
+        );
 
-      order: {
+      return res.json(data);
+
+    } catch (error) {
+      console.error(
+        "Erro ao validar ID:",
+        error
+      );
+
+      return res.status(500).json({
+        ok: false,
+        error:
+          error.message
+      });
+    }
+  }
+);
+
+/* =========================================================
+   CRIAR CHECKOUT ASAAS
+========================================================= */
+
+app.post(
+  "/api/orders",
+  async (req, res) => {
+    try {
+      const {
+        playerId,
+        productId,
+        paymentMethod
+      } = req.body;
+
+      if (
+        !playerId ||
+        !productId ||
+        !paymentMethod
+      ) {
+        return res.status(400).json({
+          error:
+            "Preencha todos os dados."
+        });
+      }
+
+      const cleanPlayerId =
+        String(playerId).trim();
+
+      if (
+        !/^\d{5,15}$/.test(
+          cleanPlayerId
+        )
+      ) {
+        return res.status(400).json({
+          error:
+            "Digite um ID de jogador válido."
+        });
+      }
+
+      const product =
+        products.find(
+          item =>
+            item.id === productId
+        );
+
+      if (!product) {
+        return res.status(400).json({
+          error:
+            "Produto inválido."
+        });
+      }
+
+      if (
+        !["pix", "card"].includes(
+          paymentMethod
+        )
+      ) {
+        return res.status(400).json({
+          error:
+            "Forma de pagamento inválida."
+        });
+      }
+
+      if (!asaasConfigured()) {
+        return res.status(500).json({
+          error:
+            "Pagamento Asaas não configurado."
+        });
+      }
+
+      const orderId =
+        "VZ-" +
+        Date.now()
+          .toString(36)
+          .toUpperCase() +
+        "-" +
+        crypto
+          .randomBytes(3)
+          .toString("hex")
+          .toUpperCase();
+
+      const baseUrl =
+        getBaseUrl(req);
+
+      const billingTypes =
+        paymentMethod === "pix"
+          ? ["PIX"]
+          : ["CREDIT_CARD"];
+
+      /*
+        Guardamos os dados antes de criar
+        o checkout.
+      */
+
+      orders.set(orderId, {
         id: orderId,
 
         playerId:
@@ -403,417 +595,473 @@ app.post("/api/orders", async (req, res) => {
         paymentMethod,
 
         status:
-          "waiting_payment"
-      },
+          "waiting_payment",
 
-      checkout: {
-        id:
-          checkout.id,
+        createdAt:
+          new Date().toISOString(),
 
-        link:
-          checkoutLink,
+        supplierOrderId:
+          null
+      });
 
-        status:
-          checkout.status
+      const checkout =
+        await asaasRequest(
+          "/checkouts",
+          {
+            method: "POST",
+
+            body: JSON.stringify({
+              billingTypes,
+
+              chargeTypes: [
+                "DETACHED"
+              ],
+
+              minutesToExpire: 60,
+
+              externalReference:
+                `${orderId}|PLAYER:${cleanPlayerId}|PRODUCT:${product.id}`,
+
+              callback: {
+                successUrl:
+                  `${baseUrl}/pagamento/sucesso?pedido=${encodeURIComponent(
+                    orderId
+                  )}`,
+
+                cancelUrl:
+                  `${baseUrl}/pagamento/cancelado?pedido=${encodeURIComponent(
+                    orderId
+                  )}`,
+
+                expiredUrl:
+                  `${baseUrl}/pagamento/expirado?pedido=${encodeURIComponent(
+                    orderId
+                  )}`
+              },
+
+              items: [
+                {
+                  externalReference:
+                    product.id,
+
+                  name:
+                    `${product.diamonds.toLocaleString(
+                      "pt-BR"
+                    )} Diamantes`,
+
+                  description:
+                    `VIBEZ DIAMONDS - ID ${cleanPlayerId}`,
+
+                  quantity: 1,
+
+                  value:
+                    product.price
+                }
+              ]
+            })
+          }
+        );
+
+      const checkoutLink =
+        getAsaasCheckoutLink(
+          checkout
+        );
+
+      if (!checkoutLink) {
+        throw new Error(
+          "Asaas não retornou o link do Checkout."
+        );
       }
-    });
 
-  } catch (error) {
-    console.error(
-      "================================"
-    );
+      const savedOrder =
+        orders.get(orderId);
 
-    console.error(
-      "ERRO AO CRIAR PEDIDO"
-    );
+      savedOrder.asaasCheckoutId =
+        checkout.id;
 
-    console.error(
-      error
-    );
+      savedOrder.asaasCheckoutStatus =
+        checkout.status;
 
-    console.error(
-      "================================"
-    );
-
-    return res.status(500).json({
-      error:
-        error.message ||
-        "Não foi possível criar o pagamento."
-    });
-  }
-});
-
-/* =========================
-   PAGAMENTO - SUCESSO
-========================= */
-
-app.get(
-  "/pagamento/sucesso",
-  (req, res) => {
-    const pedido =
-      String(
-        req.query.pedido || ""
-      ).replace(
-        /[<>]/g,
-        ""
+      orders.set(
+        orderId,
+        savedOrder
       );
 
-    res.send(`
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width,initial-scale=1">
+      console.log(
+        "================================"
+      );
 
-<title>Pagamento recebido</title>
+      console.log(
+        "CHECKOUT ASAAS CRIADO"
+      );
 
-<style>
-body{
-  margin:0;
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#08070d;
-  color:#fff;
-  font-family:Arial,sans-serif;
-}
+      console.log(
+        "Pedido:",
+        orderId
+      );
 
-.box{
-  width:min(90%,500px);
-  padding:35px;
-  text-align:center;
-  border-radius:24px;
-  background:#151221;
-  border:1px solid #2b2440;
-  box-shadow:0 20px 70px #0008;
-}
+      console.log(
+        "Jogador:",
+        cleanPlayerId
+      );
 
-.icon{
-  font-size:60px;
-}
+      console.log(
+        "Produto:",
+        product.diamonds
+      );
 
-h1{
-  color:#22c55e;
-}
+      console.log(
+        "Checkout:",
+        checkout.id
+      );
 
-p{
-  color:#aaa3b8;
-  line-height:1.6;
-}
+      console.log(
+        "================================"
+      );
 
-.order{
-  color:#c4b5fd;
-}
+      return res.json({
+        ok: true,
 
-a{
-  display:inline-block;
-  margin-top:20px;
-  padding:14px 20px;
-  border-radius:12px;
-  background:#8b5cf6;
-  color:#fff;
-  text-decoration:none;
-  font-weight:bold;
-}
-</style>
-</head>
+        order: {
+          id:
+            orderId,
 
-<body>
+          playerId:
+            cleanPlayerId,
 
-<div class="box">
+          productId:
+            product.id,
 
-<div class="icon">✅</div>
+          diamonds:
+            product.diamonds,
 
-<h1>Pagamento recebido</h1>
+          price:
+            product.price,
 
-<p>
-Seu pagamento foi encaminhado para processamento.
-</p>
+          paymentMethod,
 
-<p class="order">
-Pedido: ${pedido}
-</p>
+          status:
+            "waiting_payment"
+        },
 
-<p>
-A entrega dos diamantes somente deverá ocorrer
-depois da confirmação financeira e da integração
-autorizada com o fornecedor.
-</p>
+        checkout: {
+          id:
+            checkout.id,
 
-<a href="/">
-Voltar para VIBEZ DIAMONDS
-</a>
+          link:
+            checkoutLink,
 
-</div>
+          status:
+            checkout.status
+        }
+      });
 
-</body>
-</html>
-`);
+    } catch (error) {
+      console.error(
+        "ERRO AO CRIAR PEDIDO:",
+        error
+      );
+
+      return res.status(500).json({
+        error:
+          error.message ||
+          "Não foi possível criar o pagamento."
+      });
+    }
   }
 );
 
-/* =========================
-   PAGAMENTO - CANCELADO
-========================= */
+/* =========================================================
+   CONSULTAR PEDIDO
+========================================================= */
 
 app.get(
-  "/pagamento/cancelado",
+  "/api/orders/:orderId",
   (req, res) => {
+    const order =
+      orders.get(
+        req.params.orderId
+      );
 
-    res.send(`
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width,initial-scale=1">
-
-<title>Pagamento cancelado</title>
-
-<style>
-
-body{
-  margin:0;
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#08070d;
-  color:#fff;
-  font-family:Arial,sans-serif;
-}
-
-.box{
-  width:min(90%,500px);
-  padding:35px;
-  text-align:center;
-  border-radius:24px;
-  background:#151221;
-  border:1px solid #2b2440;
-}
-
-.icon{
-  font-size:60px;
-}
-
-h1{
-  color:#f59e0b;
-}
-
-p{
-  color:#aaa3b8;
-  line-height:1.6;
-}
-
-a{
-  display:inline-block;
-  margin-top:20px;
-  padding:14px 20px;
-  border-radius:12px;
-  background:#8b5cf6;
-  color:#fff;
-  text-decoration:none;
-  font-weight:bold;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="box">
-
-<div class="icon">⚠️</div>
-
-<h1>Pagamento cancelado</h1>
-
-<p>
-O pagamento não foi concluído.
-</p>
-
-<a href="/">
-Tentar novamente
-</a>
-
-</div>
-
-</body>
-
-</html>
-`);
-  }
-);
-
-/* =========================
-   PAGAMENTO - EXPIRADO
-========================= */
-
-app.get(
-  "/pagamento/expirado",
-  (req, res) => {
-
-    res.send(`
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width,initial-scale=1">
-
-<title>Checkout expirado</title>
-
-<style>
-
-body{
-  margin:0;
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#08070d;
-  color:#fff;
-  font-family:Arial,sans-serif;
-}
-
-.box{
-  width:min(90%,500px);
-  padding:35px;
-  text-align:center;
-  border-radius:24px;
-  background:#151221;
-  border:1px solid #2b2440;
-}
-
-.icon{
-  font-size:60px;
-}
-
-h1{
-  color:#ef4444;
-}
-
-p{
-  color:#aaa3b8;
-  line-height:1.6;
-}
-
-a{
-  display:inline-block;
-  margin-top:20px;
-  padding:14px 20px;
-  border-radius:12px;
-  background:#8b5cf6;
-  color:#fff;
-  text-decoration:none;
-  font-weight:bold;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="box">
-
-<div class="icon">⏰</div>
-
-<h1>Checkout expirado</h1>
-
-<p>
-O prazo para realizar o pagamento terminou.
-</p>
-
-<a href="/">
-Criar novo pedido
-</a>
-
-</div>
-
-</body>
-
-</html>
-`);
-  }
-);
-
-/* =========================
-   PÁGINA PRINCIPAL
-========================= */
-
-/*
-  NÃO usamos app.get("*") aqui.
-  Isso evita problemas de roteamento
-  com versões recentes do Express.
-*/
-
-app.use(
-  (req, res, next) => {
-
-    if (
-      req.method !== "GET" ||
-      req.path.startsWith("/api/")
-    ) {
-      return next();
+    if (!order) {
+      return res.status(404).json({
+        ok: false,
+        error:
+          "Pedido não encontrado."
+      });
     }
 
-    res.sendFile(
-      path.join(
-        __dirname,
-        "index.html"
-      )
-    );
-  }
-);
-
-/* =========================
-   ERRO 404
-========================= */
-
-app.use(
-  (req, res) => {
-
-    res.status(404).json({
-      error: "Página não encontrada."
+    return res.json({
+      ok: true,
+      order
     });
   }
 );
 
-/* =========================
-   INICIAR SERVIDOR
-========================= */
+/* =========================================================
+   WEBHOOK ASAAS
+========================================================= */
 
-app.listen(
-  PORT,
-  () => {
+app.post(
+  "/webhooks/asaas",
+  async (req, res) => {
+    try {
+      const configuredToken =
+        process.env.ASAAS_WEBHOOK_TOKEN;
 
-    console.log(
-      "================================"
-    );
+      /*
+        Se configurado no Render,
+        valida o token enviado pelo Asaas.
+      */
 
-    console.log(
-      `VIBEZ DIAMONDS rodando na porta ${PORT}`
-    );
+      if (configuredToken) {
+        const receivedToken =
+          req.headers[
+            "asaas-access-token"
+          ];
 
-    console.log(
-      `Asaas configurado: ${asaasConfigured()}`
-    );
+        if (
+          receivedToken !==
+          configuredToken
+        ) {
+          console.warn(
+            "Webhook Asaas rejeitado: token inválido."
+          );
 
-    console.log(
-      `URL Asaas: ${ASAAS_API_URL}`
-    );
+          return res.status(401).json({
+            error:
+              "Webhook não autorizado."
+          });
+        }
+      }
 
-    console.log(
-      "================================"
-    );
-  }
-);
+      const event =
+        req.body || {};
+
+      const eventType =
+        event.event;
+
+      const payment =
+        event.payment || {};
+
+      console.log(
+        "================================"
+      );
+
+      console.log(
+        "WEBHOOK ASAAS"
+      );
+
+      console.log(
+        "Evento:",
+        eventType
+      );
+
+      console.log(
+        "Pagamento:",
+        payment.id
+      );
+
+      console.log(
+        "Status:",
+        payment.status
+      );
+
+      console.log(
+        "================================"
+      );
+
+      /*
+        Somente PAYMENT_RECEIVED
+        libera a etapa de fornecedor.
+      */
+
+      if (
+        eventType !==
+        "PAYMENT_RECEIVED"
+      ) {
+        return res.status(200).json({
+          ok: true,
+          ignored: true
+        });
+      }
+
+      const externalReference =
+        payment.externalReference;
+
+      if (!externalReference) {
+        console.warn(
+          "Pagamento sem externalReference."
+        );
+
+        return res.status(200).json({
+          ok: true
+        });
+      }
+
+      const orderId =
+        String(
+          externalReference
+        ).split("|")[0];
+
+      const order =
+        orders.get(orderId);
+
+      if (!order) {
+        console.warn(
+          "Pedido VIBEZ não encontrado:",
+          orderId
+        );
+
+        return res.status(200).json({
+          ok: true
+        });
+      }
+
+      /*
+        Idempotência:
+        nunca criaremos dois pedidos
+        no fornecedor para o mesmo pedido.
+      */
+
+      if (
+        order.supplierOrderId
+      ) {
+        console.log(
+          "Pedido já enviado ao fornecedor:",
+          order.supplierOrderId
+        );
+
+        return res.status(200).json({
+          ok: true,
+          alreadyProcessed: true
+        });
+      }
+
+      order.paymentStatus =
+        "RECEIVED";
+
+      order.paidAt =
+        new Date().toISOString();
+
+      /*
+        Por segurança, NÃO enviaremos
+        automaticamente para FazerCards
+        enquanto a categoria/oferta real
+        não estiver configurada.
+      */
+
+      if (
+        !process.env.FAZER_FREEFIRE_CATEGORY_ID ||
+        !process.env.FAZER_FREEFIRE_OFFER_PREFIX
+      ) {
+        order.status =
+          "paid_waiting_supplier_configuration";
+
+        orders.set(
+          orderId,
+          order
+        );
+
+        console.log(
+          "Pagamento recebido.",
+          "Fornecedor ainda não configurado."
+        );
+
+        return res.status(200).json({
+          ok: true,
+          orderId,
+          status:
+            order.status
+        });
+      }
+
+      /*
+        Procura a oferta correspondente
+        ao pacote.
+      */
+
+      const categoryId =
+        process.env
+          .FAZER_FREEFIRE_CATEGORY_ID;
+
+      const offers =
+        await fazerRequest(
+          `/topups/offers?category_id=${encodeURIComponent(
+            categoryId
+          )}`
+        );
+
+      const offerList =
+        Array.isArray(
+          offers.offers
+        )
+          ? offers.offers
+          : [];
+
+      const expectedName =
+        String(
+          process.env
+            .FAZER_FREEFIRE_OFFER_PREFIX
+        ).toLowerCase();
+
+      const supplierOffer =
+        offerList.find(
+          offer =>
+            String(
+              offer.name || ""
+            )
+              .toLowerCase()
+              .includes(
+                `${order.diamonds}`
+              ) &&
+            String(
+              offer.name || ""
+            )
+              .toLowerCase()
+              .includes(
+                expectedName
+              )
+        );
+
+      if (!supplierOffer) {
+        order.status =
+          "paid_supplier_offer_not_found";
+
+        orders.set(
+          orderId,
+          order
+        );
+
+        console.error(
+          "Oferta FazerCards não encontrada.",
+          {
+            diamonds:
+              order.diamonds,
+            categoryId
+          }
+        );
+
+        return res.status(200).json({
+          ok: true,
+          orderId,
+          status:
+            order.status
+        });
+      }
+
+      /*
+        Pedido para FazerCards.
+        Idempotency-Key impede duplicação.
+      */
+
+      const idempotencyKey =
+        `vibez-${orderId}`;
+
+      const supplierResult =
+        await fazerRequest(
+          "/topups/order",
+          {
+            method: "POST",
+
+         
