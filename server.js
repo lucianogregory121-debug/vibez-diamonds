@@ -1,3 +1,568 @@
+require("dotenv").config();
+
+const express = require("express");
+const helmet = require("helmet");
+const path = require("path");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.set("trust proxy", 1);
+
+app.use(
+  helmet({
+    contentSecurityPolicy: false
+  })
+);
+
+app.use(express.json({ limit: "1mb" }));
+
+/*
+  IMPORTANTE:
+  Seu index.html está na raiz do GitHub.
+  Por isso usamos __dirname aqui.
+*/
+app.use(express.static(__dirname));
+
+/* =========================
+   ASAAS
+========================= */
+
+const ASAAS_API_URL =
+  process.env.ASAAS_API_URL || "https://api.asaas.com/v3";
+
+/* =========================
+   PRODUTOS
+========================= */
+
+const products = [
+  {
+    id: "d100",
+    diamonds: 100,
+    price: 5.00
+  },
+  {
+    id: "d310",
+    diamonds: 310,
+    price: 12.99
+  },
+  {
+    id: "d520",
+    diamonds: 520,
+    price: 19.99
+  },
+  {
+    id: "d1060",
+    diamonds: 1060,
+    price: 39.99
+  },
+  {
+    id: "d2180",
+    diamonds: 2180,
+    price: 79.99
+  },
+  {
+    id: "d5600",
+    diamonds: 5600,
+    price: 199.99
+  }
+];
+
+/* =========================
+   FUNÇÕES
+========================= */
+
+function asaasConfigured() {
+  return Boolean(process.env.ASAAS_API_KEY);
+}
+
+function getBaseUrl(req) {
+  const url =
+    process.env.PUBLIC_URL ||
+    `${req.protocol}://${req.get("host")}`;
+
+  return url.replace(/\/$/, "");
+}
+
+function getAsaasCheckoutLink(checkout) {
+  if (checkout && checkout.link) {
+    return checkout.link;
+  }
+
+  if (!checkout || !checkout.id) {
+    return null;
+  }
+
+  const isSandbox =
+    ASAAS_API_URL.includes("sandbox");
+
+  const domain = isSandbox
+    ? "https://sandbox.asaas.com"
+    : "https://asaas.com";
+
+  return `${domain}/checkoutSession/show?id=${encodeURIComponent(
+    checkout.id
+  )}`;
+}
+
+async function asaasRequest(endpoint, options = {}) {
+  if (!process.env.ASAAS_API_KEY) {
+    throw new Error(
+      "ASAAS_API_KEY não configurada no Render."
+    );
+  }
+
+  const response = await fetch(
+    `${ASAAS_API_URL}${endpoint}`,
+    {
+      ...options,
+
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        access_token: process.env.ASAAS_API_KEY,
+        ...(options.headers || {})
+      }
+    }
+  );
+
+  const text = await response.text();
+
+  let data = {};
+
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = {
+      raw: text
+    };
+  }
+
+  if (!response.ok) {
+    console.error(
+      "Erro retornado pelo Asaas:",
+      response.status,
+      data
+    );
+
+    const message =
+      data?.errors
+        ?.map?.((error) => error.description)
+        .join(" ") ||
+      data?.message ||
+      "Erro retornado pelo Asaas.";
+
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+/* =========================
+   CONFIGURAÇÃO
+========================= */
+
+app.get("/api/config", (req, res) => {
+  res.json({
+    storeName:
+      process.env.STORE_NAME ||
+      "VIBEZ DIAMONDS",
+
+    asaasConfigured:
+      asaasConfigured(),
+
+    supplierConfigured:
+      Boolean(
+        process.env.SUPPLIER_API_URL &&
+        process.env.SUPPLIER_API_KEY
+      )
+  });
+});
+
+/* =========================
+   PRODUTOS
+========================= */
+
+app.get("/api/products", (req, res) => {
+  res.json({
+    products
+  });
+});
+
+/* =========================
+   CRIAR CHECKOUT
+========================= */
+
+app.post("/api/orders", async (req, res) => {
+  try {
+    const {
+      playerId,
+      productId,
+      paymentMethod
+    } = req.body;
+
+    /* ---------- validação básica ---------- */
+
+    if (
+      !playerId ||
+      !productId ||
+      !paymentMethod
+    ) {
+      return res.status(400).json({
+        error: "Preencha todos os dados."
+      });
+    }
+
+    /* ---------- ID do jogador ---------- */
+
+    const cleanPlayerId =
+      String(playerId).trim();
+
+    if (!/^\d{5,15}$/.test(cleanPlayerId)) {
+      return res.status(400).json({
+        error:
+          "Digite um ID de jogador válido."
+      });
+    }
+
+    /* ---------- produto ---------- */
+
+    const product = products.find(
+      (item) =>
+        item.id === productId
+    );
+
+    if (!product) {
+      return res.status(400).json({
+        error: "Produto inválido."
+      });
+    }
+
+    /* ---------- pagamento ---------- */
+
+    if (
+      !["pix", "card"].includes(
+        paymentMethod
+      )
+    ) {
+      return res.status(400).json({
+        error:
+          "Forma de pagamento inválida."
+      });
+    }
+
+    /* ---------- Asaas ---------- */
+
+    if (!asaasConfigured()) {
+      return res.status(500).json({
+        error:
+          "O pagamento ainda não está configurado no servidor."
+      });
+    }
+
+    /* ---------- pedido ---------- */
+
+    const orderId =
+      "VZ-" +
+      Date.now()
+        .toString(36)
+        .toUpperCase();
+
+    /* ---------- método Asaas ---------- */
+
+    const billingTypes =
+      paymentMethod === "pix"
+        ? ["PIX"]
+        : ["CREDIT_CARD"];
+
+    /* ---------- URL do site ---------- */
+
+    const baseUrl =
+      getBaseUrl(req);
+
+    /* ---------- criar Checkout ---------- */
+
+    const checkout =
+      await asaasRequest(
+        "/checkouts",
+        {
+          method: "POST",
+
+          body: JSON.stringify({
+            billingTypes,
+
+            chargeTypes: [
+              "DETACHED"
+            ],
+
+            minutesToExpire: 60,
+
+            externalReference:
+              `${orderId}|PLAYER:${cleanPlayerId}|PRODUCT:${product.id}`,
+
+            callback: {
+              successUrl:
+                `${baseUrl}/pagamento/sucesso?pedido=${encodeURIComponent(
+                  orderId
+                )}`,
+
+              cancelUrl:
+                `${baseUrl}/pagamento/cancelado?pedido=${encodeURIComponent(
+                  orderId
+                )}`,
+
+              expiredUrl:
+                `${baseUrl}/pagamento/expirado?pedido=${encodeURIComponent(
+                  orderId
+                )}`
+            },
+
+            items: [
+              {
+                externalReference:
+                  product.id,
+
+                name:
+                  `${product.diamonds.toLocaleString(
+                    "pt-BR"
+                  )} Diamantes`,
+
+                description:
+                  `Pedido VIBEZ DIAMONDS - ID ${cleanPlayerId}`,
+
+                quantity: 1,
+
+                value:
+                  product.price
+              }
+            ]
+          })
+        }
+      );
+
+    /* ---------- link do Checkout ---------- */
+
+    const checkoutLink =
+      getAsaasCheckoutLink(
+        checkout
+      );
+
+    if (!checkoutLink) {
+      throw new Error(
+        "O Asaas criou o Checkout, mas não retornou o link."
+      );
+    }
+
+    console.log(
+      "================================"
+    );
+
+    console.log(
+      "CHECKOUT ASAAS CRIADO"
+    );
+
+    console.log(
+      "Pedido:",
+      orderId
+    );
+
+    console.log(
+      "Checkout:",
+      checkout.id
+    );
+
+    console.log(
+      "Status:",
+      checkout.status
+    );
+
+    console.log(
+      "================================"
+    );
+
+    /* ---------- resposta ---------- */
+
+    return res.json({
+      ok: true,
+
+      order: {
+        id: orderId,
+
+        playerId:
+          cleanPlayerId,
+
+        productId:
+          product.id,
+
+        diamonds:
+          product.diamonds,
+
+        price:
+          product.price,
+
+        paymentMethod,
+
+        status:
+          "waiting_payment"
+      },
+
+      checkout: {
+        id:
+          checkout.id,
+
+        link:
+          checkoutLink,
+
+        status:
+          checkout.status
+      }
+    });
+
+  } catch (error) {
+    console.error(
+      "================================"
+    );
+
+    console.error(
+      "ERRO AO CRIAR PEDIDO"
+    );
+
+    console.error(
+      error
+    );
+
+    console.error(
+      "================================"
+    );
+
+    return res.status(500).json({
+      error:
+        error.message ||
+        "Não foi possível criar o pagamento."
+    });
+  }
+});
+
+/* =========================
+   PAGAMENTO - SUCESSO
+========================= */
+
+app.get(
+  "/pagamento/sucesso",
+  (req, res) => {
+    const pedido =
+      String(
+        req.query.pedido || ""
+      ).replace(
+        /[<>]/g,
+        ""
+      );
+
+    res.send(`
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+
+<title>Pagamento recebido</title>
+
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#08070d;
+  color:#fff;
+  font-family:Arial,sans-serif;
+}
+
+.box{
+  width:min(90%,500px);
+  padding:35px;
+  text-align:center;
+  border-radius:24px;
+  background:#151221;
+  border:1px solid #2b2440;
+  box-shadow:0 20px 70px #0008;
+}
+
+.icon{
+  font-size:60px;
+}
+
+h1{
+  color:#22c55e;
+}
+
+p{
+  color:#aaa3b8;
+  line-height:1.6;
+}
+
+.order{
+  color:#c4b5fd;
+}
+
+a{
+  display:inline-block;
+  margin-top:20px;
+  padding:14px 20px;
+  border-radius:12px;
+  background:#8b5cf6;
+  color:#fff;
+  text-decoration:none;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<div class="icon">✅</div>
+
+<h1>Pagamento recebido</h1>
+
+<p>
+Seu pagamento foi encaminhado para processamento.
+</p>
+
+<p class="order">
+Pedido: ${pedido}
+</p>
+
+<p>
+A entrega dos diamantes somente deverá ocorrer
+depois da confirmação financeira e da integração
+autorizada com o fornecedor.
+</p>
+
+<a href="/">
+Voltar para VIBEZ DIAMONDS
+</a>
+
+</div>
+
+</body>
+</html>
+`);
+  }
+);
+
+/* =========================
+   PAGAMENTO - CANCELADO
+========================= */
+
+app.get(
+  "/pagamento/cancelado",
+  (req, res) => {
+
+    res.send(`
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -5,500 +570,55 @@
 
 <meta charset="UTF-8">
 
-<meta
-  name="viewport"
-  content="width=device-width,initial-scale=1"
->
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
 
-<title>VIBEZ DIAMONDS</title>
+<title>Pagamento cancelado</title>
 
 <style>
 
-*{
-  box-sizing:border-box;
-}
-
-:root{
-  --bg:#08070d;
-  --card:#151221;
-  --purple:#8b5cf6;
-  --purple2:#6d28d9;
-  --text:#fff;
-  --muted:#aaa3b8;
-  --line:#2b2440;
-}
-
 body{
   margin:0;
-
-  font-family:
-    Arial,
-    sans-serif;
-
-  background:
-    radial-gradient(
-      circle at 50% -10%,
-      #2b1454 0,
-      #100b19 38%,
-      #08070d 70%
-    );
-
-  color:var(--text);
-
   min-height:100vh;
-}
-
-button,
-input{
-  font:inherit;
-}
-
-button{
-  cursor:pointer;
-}
-
-/*
-========================================
-HEADER
-========================================
-*/
-
-.header{
-  padding:
-    18px 6%;
-
   display:flex;
-
   align-items:center;
-
-  justify-content:space-between;
-
-  border-bottom:
-    1px solid #ffffff10;
-
-  background:
-    #09070dcc;
-
-  backdrop-filter:
-    blur(10px);
-
-  position:sticky;
-
-  top:0;
-
-  z-index:5;
+  justify-content:center;
+  background:#08070d;
+  color:#fff;
+  font-family:Arial,sans-serif;
 }
 
-.logo{
-  font-weight:1000;
-
-  font-size:25px;
-
-  letter-spacing:1px;
-}
-
-.logo span{
-  color:#a78bfa;
-}
-
-.badge{
-  font-size:12px;
-
-  color:#d8caff;
-
-  background:#7c3aed22;
-
-  border:
-    1px solid #8b5cf655;
-
-  padding:
-    8px 12px;
-
-  border-radius:99px;
-}
-
-/*
-========================================
-HERO
-========================================
-*/
-
-.hero{
-  max-width:1050px;
-
-  margin:auto;
-
-  padding:
-    55px 20px 25px;
-
+.box{
+  width:min(90%,500px);
+  padding:35px;
   text-align:center;
-}
-
-.hero h1{
-  font-size:
-    clamp(
-      36px,
-      8vw,
-      70px
-    );
-
-  margin:
-    0 0 10px;
-}
-
-.hero h1 span{
-  color:#a78bfa;
-}
-
-.hero p{
-  color:var(--muted);
-
-  font-size:17px;
-}
-
-/*
-========================================
-PAINEL
-========================================
-*/
-
-.wrap{
-  max-width:1050px;
-
-  margin:auto;
-
-  padding:20px;
-}
-
-.panel{
-  background:
-    linear-gradient(
-      145deg,
-      #181329,
-      #100d18
-    );
-
-  border:
-    1px solid var(--line);
-
   border-radius:24px;
-
-  padding:24px;
-
-  box-shadow:
-    0 20px 70px #0008;
+  background:#151221;
+  border:1px solid #2b2440;
 }
 
-/*
-========================================
-FORM
-========================================
-*/
-
-.formgrid{
-  display:grid;
-
-  grid-template-columns:
-    1fr 1fr;
-
-  gap:14px;
+.icon{
+  font-size:60px;
 }
 
-label{
-  display:block;
-
-  color:#cfc7dc;
-
-  font-size:13px;
-
-  margin:
-    0 0 7px;
+h1{
+  color:#f59e0b;
 }
 
-input{
-  width:100%;
-
-  padding:14px;
-
-  border:
-    1px solid var(--line);
-
-  background:#0b0911;
-
-  color:#fff;
-
-  border-radius:13px;
-
-  outline:none;
+p{
+  color:#aaa3b8;
+  line-height:1.6;
 }
 
-input:focus{
-  border-color:#8b5cf6;
-}
-
-#selected{
-  color:#c4b5fd;
-
-  padding:14px 0;
-
-  min-height:48px;
-}
-
-/*
-========================================
-PRODUTOS
-========================================
-*/
-
-.products{
-  display:grid;
-
-  grid-template-columns:
-    repeat(3,1fr);
-
-  gap:14px;
-
-  margin-top:16px;
-}
-
-.product{
-  border:
-    1px solid var(--line);
-
-  background:#120f1d;
-
-  border-radius:18px;
-
-  padding:18px;
-
-  transition:.2s;
-}
-
-.product:hover{
-  transform:
-    translateY(-2px);
-
-  border-color:
-    #8b5cf677;
-}
-
-.product.selected{
-  border-color:
-    #9d7aff;
-
-  box-shadow:
-    0 0 0 1px #9d7aff33,
-    0 0 25px #7c3aed22;
-}
-
-.diamonds{
-  font-size:25px;
-
-  font-weight:900;
-}
-
-.price{
-  color:#c4b5fd;
-
-  margin:
-    8px 0 15px;
-}
-
-.buy{
-  width:100%;
-
-  border:0;
-
-  border-radius:12px;
-
-  padding:12px;
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--purple),
-      var(--purple2)
-    );
-
-  color:#fff;
-
-  font-weight:800;
-}
-
-/*
-========================================
-PAGAMENTO
-========================================
-*/
-
-.payment{
-  display:flex;
-
-  gap:10px;
-
-  margin-top:18px;
-
-  flex-wrap:wrap;
-}
-
-.pay{
-  border:
-    1px solid var(--line);
-
-  background:#0e0b16;
-
-  color:#ddd;
-
-  padding:
-    11px 14px;
-
-  border-radius:12px;
-}
-
-.pay.active{
-  border-color:
-    #9d7aff;
-
-  background:
-    #7c3aed22;
-}
-
-/*
-========================================
-PEDIDO
-========================================
-*/
-
-.order{
-  margin-top:18px;
-
-  display:flex;
-
-  gap:10px;
-
-  align-items:center;
-
-  flex-wrap:wrap;
-}
-
-.order button{
-  width:100%;
-
-  border:0;
-
-  border-radius:13px;
-
-  padding:15px 18px;
-
-  background:#22c55e;
-
-  color:#061108;
-
-  font-weight:900;
-
-  font-size:15px;
-}
-
-.order button:disabled{
-  opacity:.6;
-
-  cursor:not-allowed;
-}
-
-#result{
-  width:100%;
-
-  text-align:center;
-
-  min-height:22px;
-
-  color:#cfc7dc;
-}
-
-#result.error{
-  color:#f87171;
-}
-
-#result.success{
-  color:#4ade80;
-}
-
-/*
-========================================
-AVISO
-========================================
-*/
-
-.notice{
+a{
+  display:inline-block;
   margin-top:20px;
-
-  padding:14px;
-
-  border-radius:13px;
-
-  background:
-    #7c3aed12;
-
-  border:
-    1px solid #8b5cf633;
-
-  color:#cfc7dc;
-
-  font-size:13px;
-
-  line-height:1.5;
-}
-
-/*
-========================================
-FOOTER
-========================================
-*/
-
-footer{
-  text-align:center;
-
-  color:#756d83;
-
-  padding:
-    30px 15px;
-
-  font-size:12px;
-}
-
-/*
-========================================
-RESPONSIVO
-========================================
-*/
-
-@media(max-width:760px){
-
-  .formgrid{
-    grid-template-columns:1fr;
-  }
-
-  .products{
-    grid-template-columns:
-      1fr 1fr;
-  }
-
-}
-
-@media(max-width:480px){
-
-  .products{
-    grid-template-columns:1fr;
-  }
-
-  .hero{
-    padding-top:40px;
-  }
-
-  .panel{
-    padding:18px;
-  }
-
+  padding:14px 20px;
+  border-radius:12px;
+  background:#8b5cf6;
+  color:#fff;
+  text-decoration:none;
+  font-weight:bold;
 }
 
 </style>
@@ -507,548 +627,193 @@ RESPONSIVO
 
 <body>
 
-<header class="header">
+<div class="box">
 
-  <div class="logo">
-    VIBEZ <span>DIAMONDS</span>
-  </div>
+<div class="icon">⚠️</div>
 
-  <div class="badge">
-    Loja online
-  </div>
+<h1>Pagamento cancelado</h1>
 
-</header>
+<p>
+O pagamento não foi concluído.
+</p>
 
-
-<section class="hero">
-
-  <h1>
-    Compre seus
-    <span>diamantes</span>
-  </h1>
-
-  <p>
-    Escolha o pacote, informe o ID do jogador
-    e faça seu pagamento com segurança.
-  </p>
-
-</section>
-
-
-<main class="wrap">
-
-<section class="panel">
-
-  <div class="formgrid">
-
-    <div>
-
-      <label for="playerId">
-        ID do jogador
-      </label>
-
-      <input
-        id="playerId"
-        inputmode="numeric"
-        autocomplete="off"
-        maxlength="15"
-        placeholder="Digite o ID do Free Fire"
-      >
-
-    </div>
-
-
-    <div>
-
-      <label>
-        Pacote selecionado
-      </label>
-
-      <div id="selected">
-        Nenhum pacote selecionado
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <h3>
-    Escolha seu pacote
-  </h3>
-
-
-  <div
-    id="products"
-    class="products"
-  ></div>
-
-
-  <div class="payment">
-
-    <button
-      class="pay active"
-      data-pay="pix"
-      onclick="setPay(this)"
-    >
-      PIX
-    </button>
-
-    <button
-      class="pay"
-      data-pay="card"
-      onclick="setPay(this)"
-    >
-      Cartão
-    </button>
-
-  </div>
-
-
-  <div class="order">
-
-    <button
-      id="continueButton"
-      onclick="createOrder()"
-    >
-      Continuar para pagamento
-    </button>
-
-    <span id="result"></span>
-
-  </div>
-
-
-  <div class="notice">
-
-    🔒 O pagamento será realizado
-    em uma página segura do Asaas.
-
-    <br><br>
-
-    Você será enviado para o Checkout
-    oficial do Asaas para concluir o pagamento.
-
-    <br><br>
-
-    <strong>
-      Importante:
-    </strong>
-
-    a criação do Checkout não significa
-    confirmação financeira. A confirmação
-    deve ser feita pelo Asaas antes de qualquer
-    entrega.
-
-  </div>
-
-</section>
-
-</main>
-
-
-<footer>
-  VIBEZ DIAMONDS • Pagamento seguro
-</footer>
-
-
-<script>
-
-let selected = null;
-
-let payment = "pix";
-
-
-/*
-========================================
-FORMATA DINHEIRO
-========================================
-*/
-
-function money(value){
-
-  return value.toLocaleString(
-    "pt-BR",
-    {
-      style:"currency",
-      currency:"BRL"
-    }
-  );
-
-}
-
-
-/*
-========================================
-FORMA DE PAGAMENTO
-========================================
-*/
-
-function setPay(button){
-
-  document
-    .querySelectorAll(".pay")
-    .forEach(
-      x =>
-        x.classList.remove("active")
-    );
-
-  button.classList.add("active");
-
-  payment =
-    button.dataset.pay;
-
-}
-
-
-/*
-========================================
-SELECIONAR PRODUTO
-========================================
-*/
-
-function selectProduct(product){
-
-  selected =
-    product;
-
-  document
-    .getElementById("selected")
-    .textContent =
-      product.diamonds.toLocaleString(
-        "pt-BR"
-      ) +
-      " diamantes • " +
-      money(product.price);
-
-
-  document
-    .querySelectorAll(".product")
-    .forEach(
-      x =>
-        x.classList.remove("selected")
-    );
-
-
-  const element =
-    document.getElementById(
-      "p-" + product.id
-    );
-
-  if(element){
-
-    element.classList.add(
-      "selected"
-    );
-
-  }
-
-}
-
-
-/*
-========================================
-CARREGAR PRODUTOS
-========================================
-*/
-
-async function loadProducts(){
-
-  const container =
-    document.getElementById(
-      "products"
-    );
-
-  try{
-
-    const response =
-      await fetch(
-        "/api/products"
-      );
-
-    if(!response.ok){
-
-      throw new Error(
-        "Não foi possível carregar os produtos."
-      );
-
-    }
-
-    const data =
-      await response.json();
-
-
-    container.innerHTML =
-      data.products
-        .map(
-          product => `
-
-<div
-  class="product"
-  id="p-${product.id}"
->
-
-  <div class="diamonds">
-
-    💎
-    ${product.diamonds.toLocaleString("pt-BR")}
-
-  </div>
-
-  <div class="price">
-
-    ${money(product.price)}
-
-  </div>
-
-  <button
-    class="buy"
-    onclick='selectProduct(${JSON.stringify(product)})'
-  >
-    Selecionar
-  </button>
+<a href="/">
+Tentar novamente
+</a>
 
 </div>
-
-`
-        )
-        .join("");
-
-
-  }catch(error){
-
-    container.innerHTML = `
-      <div style="
-        grid-column:1/-1;
-        color:#f87171;
-        text-align:center;
-        padding:20px;
-      ">
-        ${error.message}
-      </div>
-    `;
-
-  }
-
-}
-
-
-/*
-========================================
-CRIAR PEDIDO
-========================================
-*/
-
-async function createOrder(){
-
-  const playerId =
-    document
-      .getElementById("playerId")
-      .value
-      .trim();
-
-  const result =
-    document
-      .getElementById("result");
-
-  const button =
-    document
-      .getElementById(
-        "continueButton"
-      );
-
-
-  result.className = "";
-
-  /*
-  ID
-  */
-
-  if(!playerId){
-
-    result.textContent =
-      "Digite o ID do jogador.";
-
-    result.className =
-      "error";
-
-    return;
-  }
-
-
-  /*
-  VALIDAÇÃO ID
-  */
-
-  if(!/^\d{5,15}$/.test(playerId)){
-
-    result.textContent =
-      "Digite um ID de jogador válido.";
-
-    result.className =
-      "error";
-
-    return;
-  }
-
-
-  /*
-  PRODUTO
-  */
-
-  if(!selected){
-
-    result.textContent =
-      "Selecione um pacote.";
-
-    result.className =
-      "error";
-
-    return;
-  }
-
-
-  /*
-  DESABILITA BOTÃO
-  */
-
-  button.disabled = true;
-
-  button.textContent =
-    "Criando pagamento...";
-
-  result.textContent =
-    "Aguarde...";
-
-
-  try{
-
-    const response =
-      await fetch(
-        "/api/orders",
-        {
-          method:"POST",
-
-          headers:{
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-              playerId,
-              productId:
-                selected.id,
-              paymentMethod:
-                payment
-            })
-        }
-      );
-
-
-    const data =
-      await response.json();
-
-
-    if(!response.ok){
-
-      throw new Error(
-        data.error ||
-        "Erro ao criar pagamento."
-      );
-
-    }
-
-
-    if(
-      !data.checkout ||
-      !data.checkout.link
-    ){
-
-      throw new Error(
-        "O Asaas não retornou o link do pagamento."
-      );
-
-    }
-
-
-    result.textContent =
-      "Pagamento criado. Abrindo Asaas...";
-
-    result.className =
-      "success";
-
-
-    /*
-    ABRIR CHECKOUT ASAAS
-    */
-
-    window.location.href =
-      data.checkout.link;
-
-
-  }catch(error){
-
-    console.error(
-      error
-    );
-
-    result.textContent =
-      error.message ||
-      "Não foi possível criar o pagamento.";
-
-    result.className =
-      "error";
-
-
-    button.disabled =
-      false;
-
-    button.textContent =
-      "Continuar para pagamento";
-
-  }
-
-}
-
-
-/*
-========================================
-SÓ PERMITIR NÚMEROS NO ID
-========================================
-*/
-
-document
-  .getElementById("playerId")
-  .addEventListener(
-    "input",
-    function(){
-
-      this.value =
-        this.value
-          .replace(
-            /\D/g,
-            ""
-          )
-          .slice(
-            0,
-            15
-          );
-
-    }
-  );
-
-
-/*
-========================================
-INICIAR
-========================================
-*/
-
-loadProducts();
-
-</script>
 
 </body>
 
 </html>
+`);
+  }
+);
+
+/* =========================
+   PAGAMENTO - EXPIRADO
+========================= */
+
+app.get(
+  "/pagamento/expirado",
+  (req, res) => {
+
+    res.send(`
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+
+<title>Checkout expirado</title>
+
+<style>
+
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#08070d;
+  color:#fff;
+  font-family:Arial,sans-serif;
+}
+
+.box{
+  width:min(90%,500px);
+  padding:35px;
+  text-align:center;
+  border-radius:24px;
+  background:#151221;
+  border:1px solid #2b2440;
+}
+
+.icon{
+  font-size:60px;
+}
+
+h1{
+  color:#ef4444;
+}
+
+p{
+  color:#aaa3b8;
+  line-height:1.6;
+}
+
+a{
+  display:inline-block;
+  margin-top:20px;
+  padding:14px 20px;
+  border-radius:12px;
+  background:#8b5cf6;
+  color:#fff;
+  text-decoration:none;
+  font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<div class="icon">⏰</div>
+
+<h1>Checkout expirado</h1>
+
+<p>
+O prazo para realizar o pagamento terminou.
+</p>
+
+<a href="/">
+Criar novo pedido
+</a>
+
+</div>
+
+</body>
+
+</html>
+`);
+  }
+);
+
+/* =========================
+   PÁGINA PRINCIPAL
+========================= */
+
+/*
+  NÃO usamos app.get("*") aqui.
+  Isso evita problemas de roteamento
+  com versões recentes do Express.
+*/
+
+app.use(
+  (req, res, next) => {
+
+    if (
+      req.method !== "GET" ||
+      req.path.startsWith("/api/")
+    ) {
+      return next();
+    }
+
+    res.sendFile(
+      path.join(
+        __dirname,
+        "index.html"
+      )
+    );
+  }
+);
+
+/* =========================
+   ERRO 404
+========================= */
+
+app.use(
+  (req, res) => {
+
+    res.status(404).json({
+      error: "Página não encontrada."
+    });
+  }
+);
+
+/* =========================
+   INICIAR SERVIDOR
+========================= */
+
+app.listen(
+  PORT,
+  () => {
+
+    console.log(
+      "================================"
+    );
+
+    console.log(
+      `VIBEZ DIAMONDS rodando na porta ${PORT}`
+    );
+
+    console.log(
+      `Asaas configurado: ${asaasConfigured()}`
+    );
+
+    console.log(
+      `URL Asaas: ${ASAAS_API_URL}`
+    );
+
+    console.log(
+      "================================"
+    );
+  }
+);
