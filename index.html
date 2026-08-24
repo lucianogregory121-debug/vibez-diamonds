@@ -2,7 +2,9 @@
 <html lang="pt-BR">
 
 <head>
+
 <meta charset="UTF-8">
+
 <meta
   name="viewport"
   content="width=device-width,initial-scale=1"
@@ -13,7 +15,7 @@
 <style>
 
 *{
-  box-sizing:border-box
+  box-sizing:border-box;
 }
 
 :root{
@@ -25,7 +27,6 @@
   --text:#fff;
   --muted:#aaa3b8;
   --line:#2b2440;
-  --green:#22c55e;
 }
 
 body{
@@ -117,16 +118,23 @@ button{
       #181329,
       #100d18
     );
+
   border:1px solid var(--line);
   border-radius:24px;
   padding:24px;
-  box-shadow:0 20px 70px #0008;
+
+  box-shadow:
+    0 20px 70px #0008;
 }
 
 .formgrid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:14px;
+}
+
+.formgrid + .formgrid{
+  margin-top:14px;
 }
 
 label{
@@ -172,7 +180,8 @@ input:focus{
 
 .product.selected{
   border-color:#9d7aff;
-  box-shadow:0 0 0 1px #9d7aff33;
+  box-shadow:
+    0 0 0 1px #9d7aff33;
 }
 
 .diamonds{
@@ -228,27 +237,29 @@ input:focus{
   width:100%;
   border:0;
   border-radius:13px;
-  padding:16px 18px;
-  background:var(--green);
+  padding:15px 18px;
+  background:#22c55e;
   color:#061108;
   font-weight:900;
   font-size:16px;
 }
 
+.order button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+#selected{
+  color:#c4b5fd;
+  padding:14px 0;
+}
+
 #result{
   display:block;
   margin-top:12px;
-  color:#cfc7dc;
   text-align:center;
-  line-height:1.5;
-}
-
-#result.error{
-  color:#fca5a5;
-}
-
-#result.success{
-  color:#86efac;
+  color:#c4b5fd;
+  min-height:20px;
 }
 
 .notice{
@@ -269,11 +280,6 @@ footer{
   font-size:12px;
 }
 
-.loading{
-  opacity:.6;
-  pointer-events:none;
-}
-
 @media(max-width:760px){
 
   .formgrid{
@@ -292,9 +298,14 @@ footer{
     grid-template-columns:1fr;
   }
 
+  .header{
+    padding:15px 20px;
+  }
+
 }
 
 </style>
+
 </head>
 
 <body>
@@ -315,11 +326,12 @@ footer{
 <section class="hero">
 
   <h1>
-    Compre seus <span>diamantes</span>
+    Compre seus
+    <span>diamantes</span>
   </h1>
 
   <p>
-    Escolha o pacote, informe o ID do jogador
+    Escolha o pacote, informe seus dados
     e faça seu pagamento com segurança.
   </p>
 
@@ -329,6 +341,88 @@ footer{
 <main class="wrap">
 
 <section class="panel">
+
+  <!-- DADOS DO CLIENTE -->
+
+  <h3>Dados do comprador</h3>
+
+  <div class="formgrid">
+
+    <div>
+
+      <label for="customerName">
+        Nome completo
+      </label>
+
+      <input
+        id="customerName"
+        autocomplete="name"
+        placeholder="Digite seu nome completo"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label for="customerEmail">
+        E-mail
+      </label>
+
+      <input
+        id="customerEmail"
+        type="email"
+        autocomplete="email"
+        placeholder="seuemail@gmail.com"
+      >
+
+    </div>
+
+  </div>
+
+
+  <div class="formgrid">
+
+    <div>
+
+      <label for="customerCpfCnpj">
+        CPF ou CNPJ
+      </label>
+
+      <input
+        id="customerCpfCnpj"
+        inputmode="numeric"
+        autocomplete="off"
+        placeholder="Somente números"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label for="customerPhone">
+        Celular
+      </label>
+
+      <input
+        id="customerPhone"
+        inputmode="tel"
+        autocomplete="tel"
+        placeholder="(11) 99999-9999"
+      >
+
+    </div>
+
+  </div>
+
+
+  <!-- PEDIDO -->
+
+  <h3 style="margin-top:25px">
+    Dados do pedido
+  </h3>
+
 
   <div class="formgrid">
 
@@ -341,7 +435,6 @@ footer{
       <input
         id="playerId"
         inputmode="numeric"
-        maxlength="15"
         placeholder="Digite o ID do Free Fire"
       >
 
@@ -354,10 +447,7 @@ footer{
         Pacote selecionado
       </label>
 
-      <div
-        id="selected"
-        style="padding:14px 0"
-      >
+      <div id="selected">
         Nenhum pacote selecionado
       </div>
 
@@ -370,12 +460,13 @@ footer{
     Escolha seu pacote
   </h3>
 
-
   <div
     id="products"
     class="products"
   ></div>
 
+
+  <!-- PAGAMENTO -->
 
   <div class="payment">
 
@@ -398,6 +489,8 @@ footer{
   </div>
 
 
+  <!-- BOTÃO -->
+
   <div class="order">
 
     <button
@@ -414,14 +507,14 @@ footer{
 
   <div class="notice">
 
-    🔒 O pagamento será realizado em uma página
-    segura do Asaas.
+    🔒 O pagamento será realizado em uma
+    página segura do Asaas.
 
     <br><br>
 
-    Você poderá pagar pelo método escolhido e,
-    depois da confirmação do pagamento, o pedido
-    poderá seguir para a etapa de entrega.
+    Seus dados são enviados ao servidor somente
+    para criação do Checkout e preenchimento
+    do pagamento.
 
     <br><br>
 
@@ -429,9 +522,9 @@ footer{
       Importante:
     </strong>
 
-    o sistema não libera os diamantes apenas porque
-    o Checkout foi criado. A confirmação financeira
-    deve ser feita pelo Asaas antes da entrega.
+    a confirmação financeira é feita pelo
+    Webhook do Asaas. O sistema não deve liberar
+    os diamantes apenas porque o Checkout foi criado.
 
   </div>
 
@@ -441,7 +534,9 @@ footer{
 
 
 <footer>
+
   VIBEZ DIAMONDS • Pagamento seguro
+
 </footer>
 
 
@@ -452,9 +547,13 @@ let selected = null;
 let payment = "pix";
 
 
-function money(v){
+/* =========================
+   FORMATAÇÃO
+========================= */
 
-  return v.toLocaleString(
+function money(value){
+
+  return value.toLocaleString(
     "pt-BR",
     {
       style:"currency",
@@ -465,108 +564,146 @@ function money(v){
 }
 
 
-function setPay(btn){
+/* =========================
+   PAGAMENTO
+========================= */
+
+function setPay(button){
 
   document
     .querySelectorAll(".pay")
-    .forEach(x =>
-      x.classList.remove("active")
+    .forEach(
+      x =>
+        x.classList.remove("active")
     );
 
-  btn.classList.add("active");
+  button.classList.add("active");
 
-  payment = btn.dataset.pay;
+  payment =
+    button.dataset.pay;
 
 }
 
 
-function selectProduct(p){
+/* =========================
+   PRODUTO
+========================= */
 
-  selected = p;
+function selectProduct(product){
 
-  document.getElementById("selected")
+  selected = product;
+
+  document
+    .getElementById("selected")
     .textContent =
-      p.diamonds.toLocaleString("pt-BR") +
+      product.diamonds.toLocaleString(
+        "pt-BR"
+      ) +
       " diamantes • " +
-      money(p.price);
+      money(product.price);
 
   document
     .querySelectorAll(".product")
-    .forEach(x =>
-      x.classList.remove("selected")
+    .forEach(
+      x =>
+        x.classList.remove(
+          "selected"
+        )
     );
 
-  const el =
-    document.getElementById("p-" + p.id);
+  const element =
+    document.getElementById(
+      "p-" + product.id
+    );
 
-  if(el){
+  if(element){
 
-    el.classList.add("selected");
+    element.classList.add(
+      "selected"
+    );
 
   }
 
 }
 
+
+/* =========================
+   CARREGAR PRODUTOS
+========================= */
 
 async function loadProducts(){
 
   try{
 
-    const r =
-      await fetch("/api/products");
-
-    if(!r.ok){
-
-      throw new Error(
-        "Não foi possível carregar os produtos."
+    const response =
+      await fetch(
+        "/api/products"
       );
 
-    }
-
     const data =
-      await r.json();
+      await response.json();
 
-    document.getElementById("products")
+    document
+      .getElementById("products")
       .innerHTML =
-      data.products.map(p => `
+        data.products
+          .map(
+            product => `
 
-        <div
-          class="product"
-          id="p-${p.id}"
-        >
+<div
+  class="product"
+  id="p-${product.id}"
+>
 
-          <div class="diamonds">
-            💎
-            ${p.diamonds.toLocaleString("pt-BR")}
-          </div>
+  <div class="diamonds">
 
-          <div class="price">
-            ${money(p.price)}
-          </div>
+    💎
+    ${product.diamonds.toLocaleString(
+      "pt-BR"
+    )}
 
-          <button
-            class="buy"
-            onclick='selectProduct(${JSON.stringify(p)})'
-          >
-            Selecionar
-          </button>
+  </div>
 
-        </div>
+  <div class="price">
 
-      `).join("");
+    ${money(product.price)}
 
-  }catch(e){
+  </div>
 
-    document.getElementById("products")
+  <button
+    class="buy"
+    onclick='selectProduct(${JSON.stringify(
+      product
+    )})'
+  >
+
+    Selecionar
+
+  </button>
+
+</div>
+
+`
+          )
+          .join("");
+
+  }catch(error){
+
+    console.error(error);
+
+    document
+      .getElementById("products")
       .innerHTML =
-      `<div style="color:#fca5a5">
-        ${e.message}
-      </div>`;
+        "<p>Não foi possível carregar os produtos.</p>";
 
   }
 
 }
 
+
+/* =========================
+   CRIAR PEDIDO
+========================= */
 
 async function createOrder(){
 
@@ -576,18 +713,97 @@ async function createOrder(){
       .value
       .trim();
 
+
+  const customerName =
+    document
+      .getElementById("customerName")
+      .value
+      .trim();
+
+
+  const customerEmail =
+    document
+      .getElementById("customerEmail")
+      .value
+      .trim();
+
+
+  const customerCpfCnpj =
+    document
+      .getElementById("customerCpfCnpj")
+      .value
+      .replace(/\D/g,"");
+
+
+  const customerPhone =
+    document
+      .getElementById("customerPhone")
+      .value
+      .replace(/\D/g,"");
+
+
   const result =
-    document.getElementById("result");
+    document
+      .getElementById("result");
+
 
   const button =
-    document.getElementById("orderButton");
+    document
+      .getElementById("orderButton");
 
 
-  result.className = "";
+  /* ---------- validações ---------- */
+
+  if(!customerName){
+
+    result.textContent =
+      "Digite seu nome completo.";
+
+    return;
+
+  }
+
+
+  if(
+    !customerEmail ||
+    !customerEmail.includes("@")
+  ){
+
+    result.textContent =
+      "Digite um e-mail válido.";
+
+    return;
+
+  }
+
+
+  if(
+    customerCpfCnpj.length !== 11 &&
+    customerCpfCnpj.length !== 14
+  ){
+
+    result.textContent =
+      "Digite um CPF ou CNPJ válido.";
+
+    return;
+
+  }
+
+
+  if(
+    customerPhone.length < 10 ||
+    customerPhone.length > 11
+  ){
+
+    result.textContent =
+      "Digite um celular válido.";
+
+    return;
+
+  }
+
 
   if(!playerId){
-
-    result.className = "error";
 
     result.textContent =
       "Digite o ID do jogador.";
@@ -599,8 +815,6 @@ async function createOrder(){
 
   if(!/^\d{5,15}$/.test(playerId)){
 
-    result.className = "error";
-
     result.textContent =
       "Digite um ID de jogador válido.";
 
@@ -611,8 +825,6 @@ async function createOrder(){
 
   if(!selected){
 
-    result.className = "error";
-
     result.textContent =
       "Selecione um pacote.";
 
@@ -621,44 +833,56 @@ async function createOrder(){
   }
 
 
+  /* ---------- enviando ---------- */
+
   button.disabled = true;
 
-  button.classList.add("loading");
-
   result.textContent =
-    "Preparando pagamento seguro...";
+    "Criando pagamento seguro...";
 
 
   try{
 
-    const r =
-      await fetch("/api/orders",{
+    const response =
+      await fetch(
+        "/api/orders",
+        {
+          method:"POST",
 
-        method:"POST",
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
 
-        headers:{
-          "Content-Type":
-            "application/json"
-        },
+          body:JSON.stringify({
 
-        body:JSON.stringify({
+            playerId,
 
-          playerId,
+            productId:
+              selected.id,
 
-          productId:selected.id,
+            paymentMethod:
+              payment,
 
-          paymentMethod:payment
+            customerName,
 
-        })
+            customerEmail,
 
-      });
+            customerCpfCnpj,
+
+            customerPhone
+
+          })
+
+        }
+      );
 
 
     const data =
-      await r.json();
+      await response.json();
 
 
-    if(!r.ok){
+    if(!response.ok){
 
       throw new Error(
         data.error ||
@@ -668,59 +892,58 @@ async function createOrder(){
     }
 
 
-    if(
-      !data.checkout ||
-      !data.checkout.link
-    ){
-
-      throw new Error(
-        "O Asaas não retornou o link de pagamento."
-      );
-
-    }
-
-
-    result.className = "success";
-
-    result.textContent =
-      "Pedido criado. Abrindo pagamento...";
-
-
     /*
-      Pequeno atraso para o cliente
-      visualizar a mensagem.
+      O servidor devolveu o link seguro
+      do Checkout Asaas.
+
+      Agora enviamos o cliente diretamente
+      para o Asaas.
     */
 
-    setTimeout(() => {
+    if(
+      data.checkout &&
+      data.checkout.link
+    ){
+
+      result.textContent =
+        "Abrindo pagamento seguro...";
 
       window.location.href =
         data.checkout.link;
 
-    }, 500);
+      return;
+
+    }
 
 
-  }catch(e){
+    throw new Error(
+      "O Asaas não retornou o link do pagamento."
+    );
 
-    console.error(e);
 
-    result.className = "error";
+  }catch(error){
+
+    console.error(error);
 
     result.textContent =
-      e.message ||
-      "Não foi possível iniciar o pagamento.";
+      error.message ||
+      "Não foi possível criar o pagamento.";
 
     button.disabled = false;
-
-    button.classList.remove("loading");
 
   }
 
 }
 
 
+/* =========================
+   INICIAR
+========================= */
+
 loadProducts();
 
 </script>
 
 </body>
+
 </html>
