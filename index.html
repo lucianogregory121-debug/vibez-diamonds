@@ -1,729 +1,727 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>VIBEZ DIAMONDS</title>
-
-  <meta name="description"
-        content="Compre seus diamantes de Free Fire na VIBEZ DIAMONDS. Pagamento seguro.">
-
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    :root {
-      --purple: #8b5cf6;
-      --purple2: #a855f7;
-      --dark: #06040c;
-      --card: rgba(15, 10, 28, .92);
-      --border: rgba(168, 85, 247, .28);
-      --green: #18e66b;
-      --text: #fff;
-      --muted: #aaa4b8;
-    }
-
-    body {
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at 50% 10%, #42117d 0%, transparent 35%),
-        radial-gradient(circle at 10% 40%, #251044 0%, transparent 30%),
-        #05030a;
-      color: var(--text);
-      font-family: Arial, Helvetica, sans-serif;
-      overflow-x: hidden;
-    }
-
-    /* ESTRELAS */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: .55;
-
-      background-image:
-        radial-gradient(circle, #ffffff 1px, transparent 1px),
-        radial-gradient(circle, #a855f7 1px, transparent 1px);
-
-      background-size: 95px 95px, 150px 150px;
-      background-position: 0 0, 45px 65px;
-    }
-
-    /* =========================
-       TOPO
-    ========================= */
-
-    header {
-      position: relative;
-      z-index: 10;
-
-      height: 68px;
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      padding: 0 5%;
-
-      background: rgba(5, 3, 12, .92);
-      border-bottom: 1px solid rgba(168, 85, 247, .2);
-
-      backdrop-filter: blur(12px);
-    }
-
-    .logo {
-      font-size: 22px;
-      font-weight: 900;
-      letter-spacing: .5px;
-    }
-
-    .logo span {
-      color: #a855f7;
-      text-shadow: 0 0 15px #8b5cf6;
-    }
-
-    .online {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-
-      padding: 9px 15px;
-
-      border: 1px solid rgba(168, 85, 247, .5);
-      border-radius: 30px;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-      background: rgba(139, 92, 246, .08);
+<title>VIBEZ DIAMONDS</title>
 
-      font-size: 12px;
-      font-weight: bold;
-    }
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
 
-    .online-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #20e66c;
-      box-shadow: 0 0 12px #20e66c;
-    }
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 50% 0%,#42117d 0%,transparent 38%),
+    #05030a;
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+  overflow-x:hidden;
+}
 
-    /* =========================
-       BANNER
-    ========================= */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:.45;
+  background-image:
+    radial-gradient(circle,#fff 1px,transparent 1px),
+    radial-gradient(circle,#9b5cff 1px,transparent 1px);
+  background-size:95px 95px,150px 150px;
+  background-position:0 0,45px 65px;
+}
 
-    .hero {
-      position: relative;
-      min-height: 490px;
+/* =========================
+   TOPO
+========================= */
 
-      display: flex;
-      align-items: center;
-      justify-content: center;
+header{
+  position:relative;
+  z-index:20;
 
-      overflow: hidden;
+  height:68px;
 
-      border-bottom: 1px solid rgba(168, 85, 247, .18);
-    }
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
 
-    /*
-      IMAGEM ENVIADA PELO USUÁRIO
-    */
+  padding:0 5%;
 
-    .hero-image {
-      position: absolute;
-      inset: 0;
+  background:rgba(5,3,12,.94);
 
-      width: 100%;
-      height: 100%;
+  border-bottom:1px solid rgba(168,85,247,.25);
 
-      object-fit: cover;
-      object-position: center;
+  backdrop-filter:blur(12px);
+}
 
-      opacity: .72;
+.logo{
+  font-size:22px;
+  font-weight:900;
+}
 
-      filter:
-        saturate(1.08)
-        contrast(1.04);
+.logo span{
+  color:#a855f7;
+  text-shadow:0 0 15px #8b5cf6;
+}
 
-      transform: scale(1.02);
-    }
+.online{
+  display:flex;
+  align-items:center;
+  gap:7px;
 
-    /* camada escura */
-    .hero::after {
-      content: "";
+  padding:9px 15px;
 
-      position: absolute;
-      inset: 0;
+  border:1px solid rgba(168,85,247,.5);
+  border-radius:30px;
 
-      background:
-        linear-gradient(
-          to bottom,
-          rgba(20, 5, 35, .28),
-          rgba(10, 3, 18, .65) 65%,
-          #08040e 100%
-        );
-    }
+  background:rgba(139,92,246,.08);
 
-    .hero-glow {
-      position: absolute;
-      width: 500px;
-      height: 300px;
+  font-size:12px;
+  font-weight:bold;
+}
 
-      background: #8b5cf6;
-      filter: blur(150px);
+.online-dot{
+  width:8px;
+  height:8px;
 
-      opacity: .20;
+  border-radius:50%;
 
-      z-index: 1;
-    }
+  background:#20e66c;
 
-    .hero-content {
-      position: relative;
-      z-index: 3;
+  box-shadow:0 0 12px #20e66c;
+}
 
-      width: min(900px, 92%);
+/* =========================
+   BANNER
+========================= */
 
-      text-align: center;
+.hero{
+  position:relative;
 
-      padding-top: 30px;
-    }
+  min-height:430px;
 
-    .badge {
-      display: inline-block;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-      padding: 9px 17px;
+  overflow:hidden;
 
-      border-radius: 30px;
+  border-bottom:1px solid rgba(168,85,247,.2);
+}
 
-      background: rgba(67, 18, 116, .65);
+.hero-image{
+  position:absolute;
+  inset:0;
 
-      border: 1px solid rgba(192, 132, 252, .45);
+  width:100%;
+  height:100%;
 
-      color: #d8b4fe;
+  object-fit:cover;
+  object-position:center;
 
-      font-size: 11px;
-      font-weight: 900;
+  opacity:.55;
+}
 
-      letter-spacing: 1.5px;
+.hero::after{
+  content:"";
 
-      margin-bottom: 20px;
+  position:absolute;
+  inset:0;
 
-      box-shadow: 0 0 25px rgba(139, 92, 246, .18);
-    }
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(20,5,35,.25),
+      rgba(8,3,15,.55) 65%,
+      #08040e 100%
+    );
+}
 
-    .hero h1 {
-      font-size: clamp(45px, 8vw, 88px);
+.hero-content{
+  position:relative;
+  z-index:3;
 
-      line-height: .9;
+  width:92%;
 
-      font-weight: 1000;
+  text-align:center;
 
-      text-transform: uppercase;
+  padding-top:25px;
+}
 
-      text-shadow:
-        0 5px 0 rgba(0,0,0,.7),
-        0 0 30px rgba(168,85,247,.45);
-    }
+.badge{
+  display:inline-block;
 
-    .hero h1 span {
-      display: block;
+  padding:9px 17px;
 
-      background:
-        linear-gradient(
-          180deg,
-          #ffffff 0%,
-          #d8b4fe 45%,
-          #7c3aed 100%
-        );
+  border-radius:30px;
 
-      -webkit-background-clip: text;
-      background-clip: text;
+  background:rgba(67,18,116,.7);
 
-      color: transparent;
-    }
+  border:1px solid rgba(192,132,252,.5);
 
-    .hero p {
-      max-width: 650px;
+  color:#d8b4fe;
 
-      margin: 24px auto 0;
+  font-size:11px;
+  font-weight:900;
 
-      color: #ddd6e7;
+  letter-spacing:1.4px;
 
-      font-size: 15px;
-      line-height: 1.6;
+  margin-bottom:20px;
+}
 
-      text-shadow: 0 2px 8px #000;
-    }
+.hero h1{
+  font-size:clamp(44px,8vw,82px);
 
-    /* =========================
-       CONTAINER
-    ========================= */
+  line-height:.9;
 
-    .container {
-      position: relative;
-      z-index: 5;
+  font-weight:1000;
 
-      width: min(1100px, 94%);
+  text-transform:uppercase;
 
-      margin: -45px auto 70px;
-    }
+  text-shadow:
+    0 5px 0 rgba(0,0,0,.7),
+    0 0 30px rgba(168,85,247,.5);
+}
 
-    .panel {
-      padding: 25px;
+.hero h1 span{
+  display:block;
 
-      border-radius: 22px;
+  background:
+    linear-gradient(
+      180deg,
+      #fff,
+      #d8b4fe 45%,
+      #7c3aed
+    );
 
-      background:
-        linear-gradient(
-          145deg,
-          rgba(25, 15, 43, .97),
-          rgba(10, 7, 18, .97)
-        );
+  -webkit-background-clip:text;
+  background-clip:text;
 
-      border: 1px solid var(--border);
+  color:transparent;
+}
 
-      box-shadow:
-        0 30px 80px rgba(0,0,0,.6),
-        0 0 50px rgba(139,92,246,.08);
+.hero p{
+  margin:23px auto 0;
 
-      backdrop-filter: blur(15px);
-    }
+  max-width:650px;
 
-    /* =========================
-       JOGADOR
-    ========================= */
+  color:#ddd6e7;
 
-    .top-fields {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
+  font-size:14px;
+  line-height:1.6;
+}
 
-      margin-bottom: 25px;
-    }
+/* =========================
+   PAINEL
+========================= */
 
-    .field label {
-      display: block;
+.container{
+  position:relative;
+  z-index:5;
 
-      margin-bottom: 8px;
+  width:min(1100px,94%);
 
-      color: #c4b5fd;
+  margin:-40px auto 60px;
+}
 
-      font-size: 11px;
-      font-weight: 900;
+.panel{
+  padding:24px;
 
-      text-transform: uppercase;
-      letter-spacing: .7px;
-    }
+  border-radius:22px;
 
-    input {
-      width: 100%;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(25,15,43,.98),
+      rgba(9,6,17,.98)
+    );
 
-      height: 52px;
+  border:1px solid rgba(168,85,247,.3);
 
-      padding: 0 16px;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.65),
+    0 0 50px rgba(139,92,246,.1);
+}
 
-      border-radius: 13px;
+/* =========================
+   CAMPOS
+========================= */
 
-      border: 1px solid rgba(168,85,247,.2);
+.top-fields{
+  display:grid;
 
-      outline: none;
+  grid-template-columns:1fr 1fr;
 
-      color: white;
+  gap:15px;
 
-      background: #08050f;
+  margin-bottom:25px;
+}
 
-      font-size: 14px;
+.field label{
+  display:block;
 
-      transition: .2s;
-    }
+  margin-bottom:8px;
 
-    input:focus {
-      border-color: #a855f7;
+  color:#c4b5fd;
 
-      box-shadow:
-        0 0 0 3px rgba(168,85,247,.12),
-        0 0 20px rgba(168,85,247,.12);
-    }
+  font-size:11px;
+  font-weight:900;
 
-    /* =========================
-       PACOTES
-    ========================= */
+  text-transform:uppercase;
+}
 
-    .section-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+input{
+  width:100%;
+  height:52px;
 
-      margin-bottom: 15px;
-    }
+  padding:0 15px;
 
-    .section-title h2 {
-      font-size: 18px;
-    }
+  border-radius:13px;
 
-    .section-title small {
-      color: var(--muted);
-      font-size: 11px;
-    }
+  border:1px solid rgba(168,85,247,.25);
 
-    .products {
-      display: grid;
+  outline:none;
 
-      grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+  background:#08050f;
 
-      gap: 13px;
-    }
+  color:#fff;
 
-    .product {
-      position: relative;
+  font-size:14px;
+}
 
-      padding: 18px;
+input:focus{
+  border-color:#a855f7;
 
-      min-height: 145px;
+  box-shadow:
+    0 0 0 3px rgba(168,85,247,.12);
+}
 
-      border-radius: 17px;
+input[readonly]{
+  color:#c4b5fd;
+}
 
-      border: 1px solid rgba(168,85,247,.18);
+/* =========================
+   TÍTULO
+========================= */
 
-      background:
-        linear-gradient(
-          145deg,
-          rgba(25,17,40,.95),
-          rgba(10,7,17,.95)
-        );
+.section-title{
+  display:flex;
 
-      cursor: pointer;
+  align-items:center;
+  justify-content:space-between;
 
-      transition:
-        transform .2s,
-        border-color .2s,
-        box-shadow .2s;
-    }
+  margin-bottom:15px;
+}
 
-    .product:hover {
-      transform: translateY(-4px);
+.section-title h2{
+  font-size:18px;
+}
 
-      border-color: rgba(168,85,247,.7);
+.section-title small{
+  color:#8d8699;
+  font-size:11px;
+}
 
-      box-shadow:
-        0 15px 35px rgba(0,0,0,.4),
-        0 0 25px rgba(139,92,246,.12);
-    }
+/* =========================
+   PACOTES
+========================= */
 
-    .product.selected {
-      border-color: #a855f7;
+.products{
+  display:grid;
 
-      background:
-        linear-gradient(
-          145deg,
-          rgba(74,29,120,.45),
-          rgba(18,10,30,.98)
-        );
+  grid-template-columns:
+    repeat(3,minmax(0,1fr));
 
-      box-shadow:
-        0 0 0 2px rgba(168,85,247,.18),
-        0 0 30px rgba(139,92,246,.18);
-    }
+  gap:14px;
 
-    .product.selected::before {
-      content: "✓";
+  margin-bottom:25px;
+}
 
-      position: absolute;
+.product{
+  position:relative;
 
-      top: 10px;
-      right: 10px;
+  min-height:160px;
 
-      width: 25px;
-      height: 25px;
+  padding:17px;
 
-      display: grid;
-      place-items: center;
+  border-radius:17px;
 
-      border-radius: 50%;
+  border:1px solid rgba(168,85,247,.22);
 
-      background: #8b5cf6;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(27,18,44,.98),
+      rgba(10,7,18,.98)
+    );
 
-      font-weight: 900;
-    }
+  cursor:pointer;
 
-    .diamond {
-      font-size: 25px;
-      margin-bottom: 7px;
-    }
+  transition:.2s;
+}
 
-    .diamond-count {
-      font-size: 22px;
-      font-weight: 900;
-    }
+.product:hover{
+  transform:translateY(-4px);
 
-    .price {
-      margin-top: 8px;
+  border-color:#a855f7;
 
-      color: #c4b5fd;
+  box-shadow:
+    0 15px 35px rgba(0,0,0,.45),
+    0 0 25px rgba(139,92,246,.18);
+}
 
-      font-size: 14px;
-      font-weight: bold;
-    }
+.product.selected{
+  border-color:#b36cff;
 
-    .product button {
-      width: 100%;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(74,29,120,.55),
+      rgba(18,10,30,.98)
+    );
 
-      margin-top: 13px;
+  box-shadow:
+    0 0 0 2px rgba(168,85,247,.2),
+    0 0 30px rgba(139,92,246,.2);
+}
 
-      height: 38px;
+.selected-check{
+  display:none;
 
-      border: 0;
-      border-radius: 10px;
+  position:absolute;
 
-      color: white;
+  top:10px;
+  right:10px;
 
-      background:
-        linear-gradient(
-          90deg,
-          #7c3aed,
-          #a855f7
-        );
+  width:27px;
+  height:27px;
 
-      font-weight: 900;
+  align-items:center;
+  justify-content:center;
 
-      cursor: pointer;
-    }
+  border-radius:50%;
 
-    /* =========================
-       PAGAMENTO
-    ========================= */
+  background:#8b5cf6;
 
-    .payment {
-      margin-top: 25px;
-    }
+  font-weight:900;
+}
 
-    .payment-buttons {
-      display: flex;
-      gap: 10px;
+.product.selected .selected-check{
+  display:flex;
+}
 
-      margin-bottom: 18px;
-    }
+.diamond{
+  font-size:26px;
 
-    .method {
-      padding: 12px 20px;
+  margin-bottom:5px;
 
-      border-radius: 11px;
+  filter:drop-shadow(0 0 7px #38bdf8);
+}
 
-      border: 1px solid rgba(168,85,247,.25);
+.diamond-count{
+  font-size:24px;
+  font-weight:900;
+}
 
-      background: #0b0713;
+.diamond-label{
+  color:#aaa3b8;
 
-      color: white;
+  font-size:11px;
 
-      font-weight: bold;
+  margin-top:2px;
+}
 
-      cursor: pointer;
-    }
+.price{
+  margin-top:9px;
 
-    .method.active {
-      border-color: #a855f7;
+  color:#d8b4fe;
 
-      background: rgba(139,92,246,.18);
+  font-size:15px;
+  font-weight:900;
+}
 
-      box-shadow: 0 0 20px rgba(139,92,246,.12);
-    }
+.select-button{
+  width:100%;
 
-    .continue {
-      width: 100%;
+  height:37px;
 
-      height: 56px;
+  margin-top:12px;
 
-      border: 0;
-      border-radius: 14px;
+  border:0;
 
-      background:
-        linear-gradient(
-          90deg,
-          #16d95f,
-          #22e66f
-        );
+  border-radius:9px;
 
-      color: #04100a;
+  background:
+    linear-gradient(
+      90deg,
+      #7c3aed,
+      #a855f7
+    );
 
-      font-size: 14px;
+  color:#fff;
 
-      font-weight: 1000;
+  font-weight:900;
 
-      cursor: pointer;
+  cursor:pointer;
+}
 
-      box-shadow:
-        0 8px 30px rgba(34,230,111,.15);
+/* =========================
+   PAGAMENTO
+========================= */
 
-      transition: .2s;
-    }
+.payment{
+  margin-top:5px;
+}
 
-    .continue:hover {
-      transform: translateY(-2px);
+.payment-buttons{
+  display:flex;
 
-      box-shadow:
-        0 12px 35px rgba(34,230,111,.25);
-    }
+  gap:10px;
 
-    .continue:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-      transform: none;
-    }
+  margin-bottom:17px;
+}
 
-    /* =========================
-       AVISO
-    ========================= */
+.method{
+  padding:12px 20px;
 
-    .notice {
-      margin-top: 14px;
+  border-radius:11px;
 
-      padding: 18px;
+  border:1px solid rgba(168,85,247,.3);
 
-      border-radius: 14px;
+  background:#0b0713;
 
-      border: 1px solid rgba(168,85,247,.15);
+  color:#fff;
 
-      background: rgba(10,7,18,.7);
+  font-weight:bold;
 
-      color: #a9a2b6;
+  cursor:pointer;
+}
 
-      font-size: 11px;
+.method.active{
+  border-color:#a855f7;
 
-      line-height: 1.6;
-    }
+  background:rgba(139,92,246,.2);
 
-    .notice strong {
-      color: #d8b4fe;
-    }
+  box-shadow:0 0 20px rgba(139,92,246,.12);
+}
 
-    /* =========================
-       STATUS
-    ========================= */
+/* =========================
+   BOTÃO
+========================= */
 
-    .status {
-      display: none;
+.continue{
+  width:100%;
 
-      margin-top: 15px;
+  height:56px;
 
-      padding: 14px;
+  border:0;
 
-      border-radius: 12px;
+  border-radius:14px;
 
-      text-align: center;
+  background:
+    linear-gradient(
+      90deg,
+      #16d95f,
+      #22e66f
+    );
 
-      font-size: 13px;
+  color:#04100a;
 
-      font-weight: bold;
-    }
+  font-size:14px;
 
-    .status.show {
-      display: block;
-    }
+  font-weight:1000;
 
-    .status.error {
-      background: rgba(239,68,68,.12);
-      border: 1px solid rgba(239,68,68,.3);
-      color: #fca5a5;
-    }
+  cursor:pointer;
 
-    .status.loading {
-      background: rgba(139,92,246,.12);
-      border: 1px solid rgba(139,92,246,.3);
-      color: #d8b4fe;
-    }
+  transition:.2s;
+}
 
-    /* =========================
-       RODAPÉ
-    ========================= */
+.continue:hover:not(:disabled){
+  transform:translateY(-2px);
 
-    footer {
-      position: relative;
-      z-index: 2;
+  box-shadow:
+    0 10px 30px rgba(34,230,111,.25);
+}
 
-      padding: 30px;
+.continue:disabled{
+  opacity:.45;
 
-      text-align: center;
+  cursor:not-allowed;
+}
 
-      color: #686174;
+/* =========================
+   STATUS
+========================= */
 
-      font-size: 11px;
-    }
+.status{
+  display:none;
 
-    /* =========================
-       RESPONSIVO
-    ========================= */
+  margin-top:14px;
 
-    @media (max-width: 750px) {
+  padding:14px;
 
-      header {
-        padding: 0 18px;
-      }
+  border-radius:12px;
 
-      .hero {
-        min-height: 400px;
-      }
+  text-align:center;
 
-      .hero-image {
-        object-position: center;
-      }
+  font-size:13px;
 
-      .hero h1 {
-        font-size: 48px;
-      }
+  font-weight:bold;
+}
 
-      .hero p {
-        font-size: 13px;
-      }
+.status.show{
+  display:block;
+}
 
-      .container {
-        width: 94%;
-        margin-top: -30px;
-      }
+.status.error{
+  color:#fca5a5;
 
-      .top-fields {
-        grid-template-columns: 1fr;
-      }
+  background:rgba(239,68,68,.1);
 
-      .products {
-        grid-template-columns: repeat(2, 1fr);
-      }
+  border:1px solid rgba(239,68,68,.3);
+}
 
-      .panel {
-        padding: 17px;
-      }
-    }
+.status.loading{
+  color:#d8b4fe;
 
-    @media (max-width: 420px) {
+  background:rgba(139,92,246,.1);
 
-      .products {
-        grid-template-columns: 1fr 1fr;
-        gap: 9px;
-      }
+  border:1px solid rgba(139,92,246,.3);
+}
 
-      .product {
-        padding: 13px;
-      }
+/* =========================
+   AVISO
+========================= */
 
-      .diamond-count {
-        font-size: 19px;
-      }
+.notice{
+  margin-top:14px;
 
-      .hero h1 {
-        font-size: 40px;
-      }
+  padding:17px;
 
-      .hero {
-        min-height: 370px;
-      }
-    }
-  </style>
+  border-radius:14px;
+
+  border:1px solid rgba(168,85,247,.15);
+
+  background:rgba(10,7,18,.75);
+
+  color:#aaa3b8;
+
+  font-size:11px;
+
+  line-height:1.6;
+}
+
+.notice strong{
+  color:#d8b4fe;
+}
+
+/* =========================
+   RODAPÉ
+========================= */
+
+footer{
+  position:relative;
+  z-index:2;
+
+  padding:30px;
+
+  text-align:center;
+
+  color:#686174;
+
+  font-size:11px;
+}
+
+/* =========================
+   CELULAR
+========================= */
+
+@media(max-width:750px){
+
+  header{
+    padding:0 18px;
+  }
+
+  .hero{
+    min-height:400px;
+  }
+
+  .hero h1{
+    font-size:48px;
+  }
+
+  .hero p{
+    font-size:13px;
+  }
+
+  .container{
+    width:94%;
+
+    margin-top:-30px;
+  }
+
+  .top-fields{
+    grid-template-columns:1fr;
+  }
+
+  .products{
+    grid-template-columns:repeat(2,1fr);
+
+    gap:10px;
+  }
+
+  .panel{
+    padding:17px;
+  }
+
+}
+
+@media(max-width:420px){
+
+  .hero{
+    min-height:370px;
+  }
+
+  .hero h1{
+    font-size:39px;
+  }
+
+  .products{
+    grid-template-columns:repeat(2,1fr);
+
+    gap:8px;
+  }
+
+  .product{
+    padding:12px;
+  }
+
+  .diamond-count{
+    font-size:20px;
+  }
+
+  .price{
+    font-size:13px;
+  }
+
+  .select-button{
+    font-size:11px;
+  }
+
+}
+</style>
 </head>
 
 <body>
+
+<!-- =========================
+     TOPO
+========================= -->
 
 <header>
 
@@ -746,16 +744,16 @@
 <section class="hero">
 
   <!--
-    COLOQUE A IMAGEM ENVIADA
-    NO MESMO LOCAL DESTE index.html
+    Se sua imagem atual já está funcionando,
+    mantenha o mesmo nome do arquivo aqui.
   -->
+
   <img
     class="hero-image"
     src="1000169126.png"
-    alt="Banner VIBEZ DIAMONDS"
+    alt="VIBEZ DIAMONDS"
+    onerror="this.style.display='none'"
   >
-
-  <div class="hero-glow"></div>
 
   <div class="hero-content">
 
@@ -784,139 +782,350 @@
 
 <main class="container">
 
-  <div class="panel">
+<div class="panel">
 
-    <!-- DADOS -->
+  <!-- DADOS -->
 
-    <div class="top-fields">
+  <div class="top-fields">
 
-      <div class="field">
+    <div class="field">
 
-        <label for="playerId">
-          ID do jogador
-        </label>
+      <label>
+        ID do jogador
+      </label>
 
-        <input
-          id="playerId"
-          type="text"
-          inputmode="numeric"
-          maxlength="15"
-          placeholder="Digite o ID do Free Fire"
-        >
-
-      </div>
-
-
-      <div class="field">
-
-        <label>
-          Pacote selecionado
-        </label>
-
-        <input
-          id="selectedPackage"
-          type="text"
-          readonly
-          value="Nenhum pacote selecionado"
-        >
-
-      </div>
-
-    </div>
-
-
-    <!-- PACOTES -->
-
-    <div class="section-title">
-
-      <h2>
-        💎 Escolha seu pacote
-      </h2>
-
-      <small>
-        Clique no pacote desejado
-      </small>
-
-    </div>
-
-
-    <div
-      id="products"
-      class="products"
-    ></div>
-
-
-    <!-- PAGAMENTO -->
-
-    <div class="payment">
-
-      <div class="section-title">
-
-        <h2>
-          Forma de pagamento
-        </h2>
-
-      </div>
-
-
-      <div class="payment-buttons">
-
-        <button
-          class="method active"
-          data-method="pix"
-          type="button"
-        >
-          💠 PIX
-        </button>
-
-        <button
-          class="method"
-          data-method="card"
-          type="button"
-        >
-          💳 Cartão
-        </button>
-
-      </div>
-
-
-      <button
-        id="continueButton"
-        class="continue"
-        type="button"
-        disabled
+      <input
+        id="playerId"
+        type="text"
+        inputmode="numeric"
+        maxlength="15"
+        placeholder="Digite o ID do Free Fire"
       >
-        CONTINUAR PARA PAGAMENTO
-      </button>
+
+    </div>
 
 
-      <div
-        id="status"
-        class="status"
-      ></div>
+    <div class="field">
 
+      <label>
+        Pacote selecionado
+      </label>
 
-      <div class="notice">
-
-        🔒 <strong>Pagamento seguro</strong>
-
-        <br><br>
-
-        Você será direcionado para uma página
-        segura do Asaas para concluir o pagamento.
-
-        <br><br>
-
-        <strong>Importante:</strong>
-        criar o Checkout não significa que o pagamento
-        foi confirmado. A entrega dos diamantes somente
-        deve ocorrer depois da confirmação financeira.
-
-      </div>
+      <input
+        id="selectedPackage"
+        type="text"
+        readonly
+        value="Nenhum pacote selecionado"
+      >
 
     </div>
 
   </div>
+
+
+  <!-- PACOTES -->
+
+  <div class="section-title">
+
+    <h2>
+      💎 Escolha seu pacote
+    </h2>
+
+    <small>
+      Selecione uma opção
+    </small>
+
+  </div>
+
+
+  <div
+    id="products"
+    class="products"
+  >
+
+    <!-- 100 -->
+
+    <div
+      class="product"
+      data-id="d100"
+      data-diamonds="100"
+      data-price="5.00"
+    >
+
+      <div class="selected-check">✓</div>
+
+      <div class="diamond">💎</div>
+
+      <div class="diamond-count">
+        100
+      </div>
+
+      <div class="diamond-label">
+        Diamantes
+      </div>
+
+      <div class="price">
+        R$ 5,00
+      </div>
+
+      <button
+        class="select-button"
+        type="button"
+      >
+        Selecionar
+      </button>
+
+    </div>
+
+
+    <!-- 310 -->
+
+    <div
+      class="product"
+      data-id="d310"
+      data-diamonds="310"
+      data-price="12.99"
+    >
+
+      <div class="selected-check">✓</div>
+
+      <div class="diamond">💎</div>
+
+      <div class="diamond-count">
+        310
+      </div>
+
+      <div class="diamond-label">
+        Diamantes
+      </div>
+
+      <div class="price">
+        R$ 12,99
+      </div>
+
+      <button
+        class="select-button"
+        type="button"
+      >
+        Selecionar
+      </button>
+
+    </div>
+
+
+    <!-- 520 -->
+
+    <div
+      class="product"
+      data-id="d520"
+      data-diamonds="520"
+      data-price="19.99"
+    >
+
+      <div class="selected-check">✓</div>
+
+      <div class="diamond">💎</div>
+
+      <div class="diamond-count">
+        520
+      </div>
+
+      <div class="diamond-label">
+        Diamantes
+      </div>
+
+      <div class="price">
+        R$ 19,99
+      </div>
+
+      <button
+        class="select-button"
+        type="button"
+      >
+        Selecionar
+      </button>
+
+    </div>
+
+
+    <!-- 1060 -->
+
+    <div
+      class="product"
+      data-id="d1060"
+      data-diamonds="1060"
+      data-price="39.99"
+    >
+
+      <div class="selected-check">✓</div>
+
+      <div class="diamond">💎</div>
+
+      <div class="diamond-count">
+        1.060
+      </div>
+
+      <div class="diamond-label">
+        Diamantes
+      </div>
+
+      <div class="price">
+        R$ 39,99
+      </div>
+
+      <button
+        class="select-button"
+        type="button"
+      >
+        Selecionar
+      </button>
+
+    </div>
+
+
+    <!-- 2180 -->
+
+    <div
+      class="product"
+      data-id="d2180"
+      data-diamonds="2180"
+      data-price="79.99"
+    >
+
+      <div class="selected-check">✓</div>
+
+      <div class="diamond">💎</div>
+
+      <div class="diamond-count">
+        2.180
+      </div>
+
+      <div class="diamond-label">
+        Diamantes
+      </div>
+
+      <div class="price">
+        R$ 79,99
+      </div>
+
+      <button
+        class="select-button"
+        type="button"
+      >
+        Selecionar
+      </button>
+
+    </div>
+
+
+    <!-- 5600 -->
+
+    <div
+      class="product"
+      data-id="d5600"
+      data-diamonds="5600"
+      data-price="199.99"
+    >
+
+      <div class="selected-check">✓</div>
+
+      <div class="diamond">💎</div>
+
+      <div class="diamond-count">
+        5.600
+      </div>
+
+      <div class="diamond-label">
+        Diamantes
+      </div>
+
+      <div class="price">
+        R$ 199,99
+      </div>
+
+      <button
+        class="select-button"
+        type="button"
+      >
+        Selecionar
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- PAGAMENTO -->
+
+  <div class="payment">
+
+    <div class="section-title">
+
+      <h2>
+        Forma de pagamento
+      </h2>
+
+    </div>
+
+
+    <div class="payment-buttons">
+
+      <button
+        type="button"
+        class="method active"
+        data-method="pix"
+      >
+        💠 PIX
+      </button>
+
+      <button
+        type="button"
+        class="method"
+        data-method="card"
+      >
+        💳 Cartão
+      </button>
+
+    </div>
+
+
+    <button
+      id="continueButton"
+      class="continue"
+      type="button"
+      disabled
+    >
+      CONTINUAR PARA PAGAMENTO
+    </button>
+
+
+    <div
+      id="status"
+      class="status"
+    ></div>
+
+
+    <div class="notice">
+
+      🔒 <strong>Pagamento seguro</strong>
+
+      <br><br>
+
+      Você será direcionado para uma página
+      segura do Asaas para concluir o pagamento.
+
+      <br><br>
+
+      <strong>Importante:</strong>
+      criar o Checkout não significa que o pagamento
+      foi confirmado. A entrega dos diamantes somente
+      deve ocorrer depois da confirmação financeira.
+
+    </div>
+
+  </div>
+
+</div>
 
 </main>
 
@@ -928,325 +1137,345 @@
 
 <script>
 
-  let products = [];
+/* =========================
+   PRODUTOS
+   AGORA FICAM NO PRÓPRIO HTML
+========================= */
 
-  let selectedProduct = null;
+const products = [
 
-  let paymentMethod = "pix";
+  {
+    id:"d100",
+    diamonds:100,
+    price:5.00
+  },
 
+  {
+    id:"d310",
+    diamonds:310,
+    price:12.99
+  },
 
-  /* =========================
-     ELEMENTOS
-  ========================= */
+  {
+    id:"d520",
+    diamonds:520,
+    price:19.99
+  },
 
-  const playerIdInput =
-    document.getElementById("playerId");
+  {
+    id:"d1060",
+    diamonds:1060,
+    price:39.99
+  },
 
-  const selectedPackage =
-    document.getElementById("selectedPackage");
+  {
+    id:"d2180",
+    diamonds:2180,
+    price:79.99
+  },
 
-  const productsContainer =
-    document.getElementById("products");
-
-  const continueButton =
-    document.getElementById("continueButton");
-
-  const statusBox =
-    document.getElementById("status");
-
-
-  /* =========================
-     STATUS
-  ========================= */
-
-  function showStatus(message, type) {
-
-    statusBox.textContent = message;
-
-    statusBox.className =
-      "status show " + type;
+  {
+    id:"d5600",
+    diamonds:5600,
+    price:199.99
   }
 
-
-  function hideStatus() {
-
-    statusBox.className = "status";
-    statusBox.textContent = "";
-  }
+];
 
 
-  /* =========================
-     FORMATAR PREÇO
-  ========================= */
+let selectedProduct = null;
 
-  function formatPrice(value) {
-
-    return Number(value).toLocaleString(
-      "pt-BR",
-      {
-        style: "currency",
-        currency: "BRL"
-      }
-    );
-
-  }
+let paymentMethod = "pix";
 
 
-  /* =========================
-     PACOTES
-  ========================= */
+/* =========================
+   ELEMENTOS
+========================= */
 
-  function renderProducts() {
+const playerId =
+  document.getElementById("playerId");
 
-    productsContainer.innerHTML = "";
+const selectedPackage =
+  document.getElementById("selectedPackage");
 
-    products.forEach(product => {
+const continueButton =
+  document.getElementById("continueButton");
 
-      const card =
-        document.createElement("div");
+const statusBox =
+  document.getElementById("status");
 
-      card.className = "product";
-
-      card.dataset.id = product.id;
-
-
-      if (
-        selectedProduct &&
-        selectedProduct.id === product.id
-      ) {
-        card.classList.add("selected");
-      }
+const productCards =
+  document.querySelectorAll(".product");
 
 
-      card.innerHTML = `
+/* =========================
+   SELECIONAR PRODUTO
+========================= */
 
-        <div class="diamond">
-          💎
-        </div>
+productCards.forEach(card => {
 
-        <div class="diamond-count">
-          ${Number(product.diamonds).toLocaleString("pt-BR")}
-        </div>
+  card.addEventListener("click", () => {
 
-        <div class="price">
-          ${formatPrice(product.price)}
-        </div>
+    const id =
+      card.dataset.id;
 
-        <button type="button">
-          Selecionar
-        </button>
-
-      `;
-
-
-      card.addEventListener(
-        "click",
-        () => {
-
-          selectProduct(product);
-
-        }
+    selectedProduct =
+      products.find(
+        product => product.id === id
       );
 
+    if(!selectedProduct){
+      return;
+    }
 
-      productsContainer.appendChild(card);
+
+    /* remove seleção anterior */
+
+    productCards.forEach(item => {
+
+      item.classList.remove("selected");
 
     });
 
-  }
+
+    /* seleciona atual */
+
+    card.classList.add("selected");
 
 
-  function selectProduct(product) {
-
-    selectedProduct = product;
+    /* mostra pacote */
 
     selectedPackage.value =
-      `${Number(product.diamonds).toLocaleString("pt-BR")} Diamantes — ${formatPrice(product.price)}`;
+      `${selectedProduct.diamonds.toLocaleString("pt-BR")} Diamantes — R$ ${selectedProduct.price.toFixed(2).replace(".",",")}`;
+
+
+    /* libera botão */
 
     continueButton.disabled = false;
 
+
     hideStatus();
 
-    renderProducts();
+  });
 
-  }
+});
 
 
-  /* =========================
-     PAGAMENTO
-  ========================= */
+/* =========================
+   MÉTODO PAGAMENTO
+========================= */
 
-  document
+document
+.querySelectorAll(".method")
+.forEach(button => {
+
+  button.addEventListener("click", () => {
+
+    document
     .querySelectorAll(".method")
-    .forEach(button => {
+    .forEach(item => {
 
-      button.addEventListener(
-        "click",
-        () => {
-
-          document
-            .querySelectorAll(".method")
-            .forEach(item =>
-              item.classList.remove("active")
-            );
-
-          button.classList.add("active");
-
-          paymentMethod =
-            button.dataset.method;
-
-        }
-      );
+      item.classList.remove("active");
 
     });
 
 
-  /* =========================
-     ID
-  ========================= */
+    button.classList.add("active");
 
-  playerIdInput.addEventListener(
-    "input",
-    () => {
 
-      playerIdInput.value =
-        playerIdInput.value.replace(
-          /\D/g,
-          ""
-        );
+    paymentMethod =
+      button.dataset.method;
 
-      hideStatus();
+  });
 
-    }
+});
+
+
+/* =========================
+   ID DO JOGADOR
+========================= */
+
+playerId.addEventListener("input", () => {
+
+  playerId.value =
+    playerId.value.replace(/\D/g,"");
+
+  hideStatus();
+
+});
+
+
+/* =========================
+   STATUS
+========================= */
+
+function showStatus(message,type){
+
+  statusBox.textContent = message;
+
+  statusBox.className =
+    "status show " + type;
+
+}
+
+
+function hideStatus(){
+
+  statusBox.textContent = "";
+
+  statusBox.className =
+    "status";
+
+}
+
+
+/* =========================
+   PAGAMENTO
+========================= */
+
+continueButton.addEventListener(
+"click",
+async () => {
+
+  const cleanPlayerId =
+    playerId.value.trim();
+
+
+  /* valida ID */
+
+  if(!/^\d{5,15}$/.test(cleanPlayerId)){
+
+    showStatus(
+      "Digite um ID de jogador válido.",
+      "error"
+    );
+
+    playerId.focus();
+
+    return;
+
+  }
+
+
+  /* valida pacote */
+
+  if(!selectedProduct){
+
+    showStatus(
+      "Escolha um pacote de diamantes.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  continueButton.disabled = true;
+
+  continueButton.textContent =
+    "CRIANDO PAGAMENTO...";
+
+
+  showStatus(
+    "Preparando seu pagamento seguro...",
+    "loading"
   );
 
 
-  /* =========================
-     CRIAR PEDIDO
-  ========================= */
+  try{
 
-  continueButton.addEventListener(
-    "click",
-    async () => {
+    const response =
+      await fetch(
+        "/api/orders",
+        {
+          method:"POST",
 
-      hideStatus();
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
 
+          body:JSON.stringify({
 
-      const playerId =
-        playerIdInput.value.trim();
+            playerId:
+              cleanPlayerId,
 
+            productId:
+              selectedProduct.id,
 
-      if (!/^\d{5,15}$/.test(playerId)) {
+            paymentMethod:
+              paymentMethod
 
-        showStatus(
-          "Digite um ID de jogador válido.",
-          "error"
-        );
-
-        playerIdInput.focus();
-
-        return;
-      }
-
-
-      if (!selectedProduct) {
-
-        showStatus(
-          "Escolha um pacote de diamantes.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      continueButton.disabled = true;
-
-      continueButton.textContent =
-        "CRIANDO PAGAMENTO...";
-
-
-      showStatus(
-        "Preparando seu pagamento seguro...",
-        "loading"
+          })
+        }
       );
 
 
-      try {
-
-        const response =
-          await fetch(
-            "/api/orders",
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
-
-              body: JSON.stringify({
-
-                playerId,
-
-                productId:
-                  selectedProduct.id,
-
-                paymentMethod
-
-              })
-
-            }
-          );
+    const data =
+      await response.json();
 
 
-        const data =
-          await response.json();
+    if(
+      !response.ok ||
+      !data.ok
+    ){
+
+      throw new Error(
+        data.error ||
+        "Não foi possível criar o pagamento."
+      );
+
+    }
 
 
-        if (
-          !response.ok ||
-          !data.ok
-        ) {
+    if(
+      !data.checkout ||
+      !data.checkout.link
+    ){
 
-          throw new Error(
-            data.error ||
-            "Não foi possível criar o pagamento."
-          );
+      throw new Error(
+        "O Asaas não retornou o link do Checkout."
+      );
 
-        }
-
-
-        if (
-          !data.checkout ||
-          !data.checkout.link
-        ) {
-
-          throw new Error(
-            "O Asaas não retornou o link do Checkout."
-          );
-
-        }
+    }
 
 
-        showStatus(
-          "Checkout criado. Redirecionando...",
-          "loading"
-        );
+    showStatus(
+      "Checkout criado. Redirecionando...",
+      "loading"
+    );
 
 
-        /*
-          Abre a página segura do Asaas.
-        */
+    /* vai para o Asaas */
 
-        window.location.href =
-          data.checkout.link;
+    window.location.href =
+      data.checkout.link;
 
 
-      } catch (error) {
+  }catch(error){
 
-        console.error(error);
+    console.error(error);
 
 
-        showStatus(
-          error.messag
+    showStatus(
+      error.message ||
+      "Erro ao criar pagamento.",
+      "error"
+    );
+
+
+    continueButton.disabled = false;
+
+    continueButton.textContent =
+      "CONTINUAR PARA PAGAMENTO";
+
+  }
+
+});
+
+
+</script>
+
+</body>
+  </html>
