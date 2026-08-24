@@ -1,365 +1,177 @@
-require("dotenv").config();
-
 const express = require("express");
 const helmet = require("helmet");
-const path = require("path");
 const crypto = require("crypto");
-const { Pool } = require("pg");
+const path = require("path");
+
+// dotenv é opcional.
+// No Render, as variáveis ficam disponíveis diretamente em process.env.
+try {
+  require("dotenv").config();
+} catch (_) {}
 
 const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-/* =========================================================
-   CONFIGURAÇÕES
-========================================================= */
-
-const ASAAS_API_URL =
-  process.env.ASAAS_API_URL ||
-  "https://api.asaas.com/v3";
-
-const FAZER_API_URL =
-  process.env.FAZER_API_URL ||
-  "https://api.fzr.cards/api/v2";
+// ======================================================
+// CONFIGURAÇÕES
+// ======================================================
 
 const STORE_NAME =
-  process.env.STORE_NAME ||
-  "VIBEZ DIAMONDS";
+  process.env.STORE_NAME || "VIBEZ DIAMONDS";
 
-/*
-  IMPORTANTE:
-  Coloque no Render a cotação USD -> BRL que você
-  deseja usar para transformar o preço da FazerCards
-  em preço de venda no Asaas.
+// FreeFire Shop
+const FREEFIRE_API_URL = (
+  process.env.FREEFIRE_API_URL ||
+  "https://freefireshop.com.br"
+).replace(/\/$/, "");
 
-  Exemplo:
-  FAZER_USD_BRL_RATE=5.50
+const FREEFIRE_USER_ID =
+  process.env.FREEFIRE_USER_ID || "";
 
-  NÃO coloque o símbolo R$.
-*/
+const FREEFIRE_API_KEY =
+  process.env.FREEFIRE_API_KEY || "";
 
-const USD_BRL_RATE = Number(
-  process.env.FAZER_USD_BRL_RATE || 0
-);
+// Asaas
+const ASAAS_API_URL = (
+  process.env.ASAAS_API_URL ||
+  "https://api.asaas.com/v3"
+).replace(/\/$/, "");
 
-/*
-  Margem da loja.
+const ASAAS_API_KEY =
+  process.env.ASAAS_API_KEY || "";
 
-  Exemplo:
-  30 = acrescenta 30%
-  50 = acrescenta 50%
-*/
+// URL pública do Render
+const PUBLIC_URL = (
+  process.env.PUBLIC_URL || ""
+).replace(/\/$/, "");
 
-const STORE_MARKUP_PERCENT = Number(
-  process.env.STORE_MARKUP_PERCENT || 0
-);
+// Token usado para proteger o webhook do Asaas
+const WEBHOOK_AUTH_TOKEN =
+  process.env.ASAAS_WEBHOOK_AUTH_TOKEN || "";
 
-/*
-  ID da categoria Free Fire LATAM.
+// Chave interna para criptografar os dados do pedido
+const ORDER_SECRET =
+  process.env.ORDER_SECRET || "";
 
-  Se deixar vazio, o servidor tenta encontrar
-  automaticamente uma categoria cujo nome contenha
-  "Free Fire" e "LATAM".
-*/
 
-const FREE_FIRE_CATEGORY_ID =
-  process.env.FAZER_FREEFIRE_CATEGORY_ID ||
-  "";
+// ======================================================
+// PRODUTOS
+// ======================================================
 
-/*
-  Campo padrão para o Player ID.
+const products = {
 
-  O servidor também consulta os campos reais
-  retornados pela FazerCards.
-*/
+  d200: {
+    id: "d200",
+    type: "diamonds",
+    name: "200 Diamantes",
+    amount: "200",
+    price: 10.90,
+    requires: "accessToken"
+  },
 
-const DEFAULT_PLAYER_FIELD =
-  process.env.FAZER_PLAYER_FIELD ||
-  "player_id";
+  d620: {
+    id: "d620",
+    type: "diamonds",
+    name: "620 Diamantes",
+    amount: "620",
+    price: 24.90,
+    requires: "accessToken"
+  },
 
-/* =========================================================
-   POSTGRESQL
-========================================================= */
+  d1040: {
+    id: "d1040",
+    type: "diamonds",
+    name: "1.040 Diamantes",
+    amount: "1040",
+    price: 34.90,
+    requires: "accessToken"
+  },
 
-let pool = null;
+  d2120: {
+    id: "d2120",
+    type: "diamonds",
+    name: "2.120 Diamantes",
+    amount: "2120",
+    price: 64.90,
+    requires: "accessToken"
+  },
 
-if (process.env.DATABASE_URL) {
-  pool = new Pool({
-    connectionString:
-      process.env.DATABASE_URL,
+  d4360: {
+    id: "d4360",
+    type: "diamonds",
+    name: "4.360 Diamantes",
+    amount: "4360",
+    price: 119.90,
+    requires: "accessToken"
+  },
 
-    ssl:
-      process.env.DATABASE_URL.includes(
-        "localhost"
-      )
-        ? false
-        : {
-            rejectUnauthorized: false
-          }
-  });
+  d5300: {
+    id: "d5300",
+    type: "diamonds",
+    name: "5.300 Diamantes",
+    amount: "5300",
+    price: 139.90,
+    requires: "accessToken"
+  },
 
-  pool.on(
-    "error",
-    (error) => {
-      console.error(
-        "Erro no PostgreSQL:",
-        error
-      );
-    }
-  );
-}
+  d11200: {
+    id: "d11200",
+    type: "diamonds",
+    name: "11.200 Diamantes",
+    amount: "11200",
+    price: 279.90,
+    requires: "accessToken"
+  },
 
-/*
-  Fallback em memória.
+  d22400: {
+    id: "d22400",
+    type: "diamonds",
+    name: "22.400 Diamantes",
+    amount: "22400",
+    price: 529.90,
+    requires: "accessToken"
+  },
 
-  Funciona para testes, mas para produção o ideal
-  é usar DATABASE_URL.
-*/
+  token: {
+    id: "token",
+    type: "token",
+    name: "Token (Caixa Universal)",
+    quantity: 1,
+    price: 4.90,
+    requires: "playerId"
+  },
 
-const memoryOrders = new Map();
-const memoryWebhookEvents = new Set();
+  pass: {
+    id: "pass",
+    type: "pass",
+    name: "Passe Booyah",
+    price: 6.90,
+    requires: "playerId"
+  }
+};
 
-/* =========================================================
-   EXPRESS
-========================================================= */
 
-app.set(
-  "trust proxy",
-  1
-);
+// ======================================================
+// ARMAZENAMENTO TEMPORÁRIO DOS PEDIDOS
+// ======================================================
+
+const orders = new Map();
+
+// Evita processar o mesmo webhook duas vezes
+const processedEvents = new Set();
+
+
+// ======================================================
+// EXPRESS
+// ======================================================
+
+app.set("trust proxy", 1);
 
 app.use(
   helmet({
     contentSecurityPolicy: false
   })
-);
-
-/*
-  Webhook FazerCards precisa do corpo RAW
-  para validar a assinatura.
-
-  Por isso esta rota fica ANTES do express.json().
-*/
-
-app.post(
-  "/api/webhooks/fazercards",
-  express.raw({
-    type: "application/json"
-  }),
-  async (req, res) => {
-    try {
-      const secret =
-        process.env.FAZER_WEBHOOK_SECRET;
-
-      if (!secret) {
-        console.error(
-          "FAZER_WEBHOOK_SECRET não configurado."
-        );
-
-        return res
-          .status(500)
-          .send("Webhook não configurado.");
-      }
-
-      const signature =
-        req.get(
-          "X-FazerCards-Signature"
-        ) || "";
-
-      const rawBody =
-        Buffer.isBuffer(req.body)
-          ? req.body
-          : Buffer.from(
-              String(req.body || "")
-            );
-
-      const expected =
-        crypto
-          .createHmac(
-            "sha256",
-            secret
-          )
-          .update(rawBody)
-          .digest("hex");
-
-      /*
-        Algumas versões/documentações usam
-        sha256=<hex>.
-
-        Aceitamos os dois formatos.
-      */
-
-      const received =
-        signature.startsWith(
-          "sha256="
-        )
-          ? signature.substring(7)
-          : signature;
-
-      if (
-        received.length !==
-        expected.length
-      ) {
-        return res
-          .status(401)
-          .send(
-            "Assinatura inválida."
-          );
-      }
-
-      const valid =
-        crypto.timingSafeEqual(
-          Buffer.from(received),
-          Buffer.from(expected)
-        );
-
-      if (!valid) {
-        return res
-          .status(401)
-          .send(
-            "Assinatura inválida."
-          );
-      }
-
-      const event =
-        JSON.parse(
-          rawBody.toString("utf8")
-        );
-
-      console.log(
-        "Webhook FazerCards:",
-        JSON.stringify(
-          event,
-          null,
-          2
-        )
-      );
-
-      /*
-        Estrutura atual documentada pela FazerCards:
-
-        {
-          event: "order.status_changed",
-          event_id: "...",
-          data: {
-            order_id: "...",
-            status: "completed"
-          }
-        }
-      */
-
-      const eventId =
-        event.event_id ||
-        event.id ||
-        crypto.randomUUID();
-
-      const alreadyProcessed =
-        await webhookAlreadyProcessed(
-          "fazercards",
-          eventId
-        );
-
-      if (alreadyProcessed) {
-        return res
-          .status(200)
-          .send("OK");
-      }
-
-      await saveWebhookEvent(
-        "fazercards",
-        eventId
-      );
-
-      const supplierOrderId =
-        event?.data?.order_id ||
-        event?.order?.id;
-
-      const supplierStatus =
-        String(
-          event?.data?.status ||
-          event?.order?.status ||
-          ""
-        ).toLowerCase();
-
-      if (supplierOrderId) {
-        const order =
-          await findOrderBySupplierOrderId(
-            supplierOrderId
-          );
-
-        if (order) {
-          let newStatus =
-            order.status;
-
-          if (
-            supplierStatus ===
-              "completed" ||
-            supplierStatus ===
-              "complete"
-          ) {
-            newStatus =
-              "delivered";
-          }
-
-          else if (
-            supplierStatus ===
-              "failed"
-          ) {
-            newStatus =
-              "delivery_failed";
-          }
-
-          else if (
-            supplierStatus ===
-              "refunded"
-          ) {
-            newStatus =
-              "refunded";
-          }
-
-          else if (
-            supplierStatus
-          ) {
-            newStatus =
-              "supplier_processing";
-          }
-
-          await updateOrder(
-            order.id,
-            {
-              status:
-                newStatus,
-
-              supplierStatus:
-                supplierStatus
-            }
-          );
-        }
-      }
-
-      return res
-        .status(200)
-        .send("OK");
-
-    } catch (error) {
-      console.error(
-        "Erro no webhook FazerCards:",
-        error
-      );
-
-      /*
-        Respondemos 200 apenas quando conseguimos
-        validar/processar a requisição.
-
-        Em erro real, 500 permite que o fornecedor
-        tente novamente.
-      */
-
-      return res
-        .status(500)
-        .send("Erro interno.");
-    }
-  }
 );
 
 app.use(
@@ -368,839 +180,1119 @@ app.use(
   })
 );
 
-/* =========================================================
-   BANCO
-========================================================= */
 
-async function initDatabase() {
-  if (!pool) {
-    console.warn(
-      "DATABASE_URL não configurada."
-    );
+// ======================================================
+// FUNÇÕES AUXILIARES
+// ======================================================
 
-    console.warn(
-      "O sistema funcionará em memória."
-    );
+function configured() {
 
-    console.warn(
-      "Configure PostgreSQL no Render para produção."
-    );
+  const missing = [];
 
-    return;
+  if (!FREEFIRE_USER_ID) {
+    missing.push("FREEFIRE_USER_ID");
   }
 
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS orders (
-      id TEXT PRIMARY KEY,
+  if (!FREEFIRE_API_KEY) {
+    missing.push("FREEFIRE_API_KEY");
+  }
 
-      player_id TEXT NOT NULL,
+  if (!ASAAS_API_KEY) {
+    missing.push("ASAAS_API_KEY");
+  }
 
-      category_id TEXT NOT NULL,
-
-      offer_id TEXT NOT NULL,
-
-      product_name TEXT NOT NULL,
-
-      price_usd NUMERIC(12,4),
-
-      price_brl NUMERIC(12,2),
-
-      payment_method TEXT NOT NULL,
-
-      status TEXT NOT NULL,
-
-      asaas_checkout_id TEXT,
-
-      asaas_external_reference TEXT,
-
-      supplier_order_id TEXT,
-
-      supplier_status TEXT,
-
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  if (
+    !ORDER_SECRET ||
+    ORDER_SECRET.length < 32
+  ) {
+    missing.push(
+      "ORDER_SECRET (mínimo 32 caracteres)"
     );
-  `);
+  }
 
-  await pool.query(`
-    CREATE INDEX IF NOT EXISTS idx_orders_asaas_checkout
-    ON orders(asaas_checkout_id);
-  `);
-
-  await pool.query(`
-    CREATE INDEX IF NOT EXISTS idx_orders_supplier
-    ON orders(supplier_order_id);
-  `);
-
-  await pool.query(`
-    CREATE INDEX IF NOT EXISTS idx_orders_reference
-    ON orders(asaas_external_reference);
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS webhook_events (
-      provider TEXT NOT NULL,
-
-      event_id TEXT NOT NULL,
-
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-      PRIMARY KEY(provider, event_id)
+  if (missing.length) {
+    throw new Error(
+      "Configure no Render: " +
+      missing.join(", ")
     );
-  `);
-
-  console.log(
-    "PostgreSQL inicializado."
-  );
+  }
 }
 
-/* =========================================================
-   FUNÇÕES DE PEDIDOS
-========================================================= */
 
-async function saveOrder(order) {
-  if (!pool) {
-    memoryOrders.set(
-      order.id,
-      {
-        ...order
-      }
+function baseUrl(req) {
+
+  return (
+    PUBLIC_URL ||
+    `${req.protocol}://${req.get("host")}`
+  );
+
+}
+
+
+function safeEqual(a, b) {
+
+  if (!a || !b) {
+    return false;
+  }
+
+  const aa = Buffer.from(String(a));
+  const bb = Buffer.from(String(b));
+
+  return (
+    aa.length === bb.length &&
+    crypto.timingSafeEqual(aa, bb)
+  );
+
+}
+
+
+// ======================================================
+// CRIPTOGRAFIA DO PEDIDO
+// ======================================================
+
+function encrypt(value) {
+
+  const key =
+    crypto
+      .createHash("sha256")
+      .update(ORDER_SECRET)
+      .digest();
+
+  const iv =
+    crypto.randomBytes(12);
+
+  const cipher =
+    crypto.createCipheriv(
+      "aes-256-gcm",
+      key,
+      iv
     );
 
+  const ciphertext =
+    Buffer.concat([
+      cipher.update(value, "utf8"),
+      cipher.final()
+    ]);
+
+  const tag =
+    cipher.getAuthTag();
+
+  return Buffer.concat([
+    iv,
+    tag,
+    ciphertext
+  ]).toString("base64url");
+
+}
+
+
+function decrypt(value) {
+
+  const key =
+    crypto
+      .createHash("sha256")
+      .update(ORDER_SECRET)
+      .digest();
+
+  const raw =
+    Buffer.from(
+      value,
+      "base64url"
+    );
+
+  const iv =
+    raw.subarray(0, 12);
+
+  const tag =
+    raw.subarray(12, 28);
+
+  const ciphertext =
+    raw.subarray(28);
+
+  const decipher =
+    crypto.createDecipheriv(
+      "aes-256-gcm",
+      key,
+      iv
+    );
+
+  decipher.setAuthTag(tag);
+
+  return Buffer.concat([
+    decipher.update(ciphertext),
+    decipher.final()
+  ]).toString("utf8");
+
+}
+
+
+// ======================================================
+// REQUEST JSON
+// ======================================================
+
+async function requestJson(
+  url,
+  options
+) {
+
+  const response =
+    await fetch(
+      url,
+      options
+    );
+
+  const text =
+    await response.text();
+
+  let data;
+
+  try {
+
+    data =
+      text
+        ? JSON.parse(text)
+        : {};
+
+  } catch (_) {
+
+    data = {
+      raw: text
+    };
+
+  }
+
+
+  if (!response.ok) {
+
+    let detail =
+      data?.errors
+        ?.map?.(
+          e => e.description
+        )
+        .join(" ");
+
+    detail =
+      detail ||
+      data?.error ||
+      data?.message ||
+      `HTTP ${response.status}`;
+
+    throw new Error(detail);
+
+  }
+
+
+  return data;
+
+}
+
+
+// ======================================================
+// FREEFIRE SHOP
+// ======================================================
+
+async function freeFire(
+  endpoint,
+  body
+) {
+
+  configured();
+
+  return requestJson(
+    `${FREEFIRE_API_URL}${endpoint}`,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        "Accept":
+          "application/json"
+      },
+
+      body: JSON.stringify({
+
+        userId:
+          FREEFIRE_USER_ID,
+
+        key:
+          FREEFIRE_API_KEY,
+
+        ...body
+
+      })
+    }
+  );
+
+}
+
+
+// ======================================================
+// ASAAS
+// ======================================================
+
+async function asaas(
+  endpoint,
+  body
+) {
+
+  if (!ASAAS_API_KEY) {
+
+    throw new Error(
+      "ASAAS_API_KEY não configurada."
+    );
+
+  }
+
+  return requestJson(
+    `${ASAAS_API_URL}${endpoint}`,
+    {
+      method: "POST",
+
+      headers: {
+
+        "Content-Type":
+          "application/json",
+
+        "Accept":
+          "application/json",
+
+        "access_token":
+          ASAAS_API_KEY
+
+      },
+
+      body:
+        JSON.stringify(body)
+
+    }
+  );
+
+}
+
+
+// ======================================================
+// ENTREGA AUTOMÁTICA
+// ======================================================
+
+async function deliver(order) {
+
+  if (!order) {
     return order;
   }
 
-  await pool.query(
-    `
-    INSERT INTO orders (
-      id,
-      player_id,
-      category_id,
-      offer_id,
-      product_name,
-      price_usd,
-      price_brl,
-      payment_method,
-      status,
-      asaas_checkout_id,
-      asaas_external_reference,
-      supplier_order_id,
-      supplier_status
-    )
-    VALUES (
-      $1,$2,$3,$4,$5,$6,$7,$8,$9,
-      $10,$11,$12,$13
-    )
-    ON CONFLICT (id)
-    DO UPDATE SET
-      player_id =
-        EXCLUDED.player_id,
+  if (order.status !== "paid") {
+    return order;
+  }
 
-      category_id =
-        EXCLUDED.category_id,
+  if (
+    order.deliveryStatus ===
+    "delivered"
+  ) {
+    return order;
+  }
 
-      offer_id =
-        EXCLUDED.offer_id,
 
-      product_name =
-        EXCLUDED.product_name,
+  orders.set(
+    order.id,
+    {
+      ...order,
 
-      price_usd =
-        EXCLUDED.price_usd,
+      deliveryStatus:
+        "processing",
 
-      price_brl =
-        EXCLUDED.price_brl,
+      updatedAt:
+        new Date().toISOString()
+    }
+  );
 
-      payment_method =
-        EXCLUDED.payment_method,
 
-      status =
-        EXCLUDED.status,
+  try {
 
-      asaas_checkout_id =
-        EXCLUDED.asaas_checkout_id,
+    let result;
 
-      asaas_external_reference =
-        EXCLUDED.asaas_external_reference,
 
-      supplier_order_id =
-        EXCLUDED.supplier_order_id,
+    // ----------------------------------------------
+    // DIAMANTES
+    // ----------------------------------------------
 
-      supplier_status =
-        EXCLUDED.supplier_status,
+    if (
+      order.type ===
+      "diamonds"
+    ) {
 
-      updated_at =
-        NOW()
-    `,
-    [
+      result =
+        await freeFire(
+          "/api/v1/diamonds/send",
+          {
+
+            accessToken:
+              order.accessToken,
+
+            diamondAmount:
+              order.amount
+
+          }
+        );
+
+    }
+
+
+    // ----------------------------------------------
+    // TOKEN
+    // ----------------------------------------------
+
+    else if (
+      order.type ===
+      "token"
+    ) {
+
+      result =
+        await freeFire(
+          "/api/v1/tokens/send",
+          {
+
+            playerID:
+              order.playerId,
+
+            quantity:
+              Number(
+                order.quantity || 1
+              ),
+
+            mensagem:
+              `Pedido ${order.id}`
+
+          }
+        );
+
+    }
+
+
+    // ----------------------------------------------
+    // PASSE BOOYAH
+    // ----------------------------------------------
+
+    else if (
+      order.type ===
+      "pass"
+    ) {
+
+      result =
+        await freeFire(
+          "/api/v1/pass/send",
+          {
+
+            uid:
+              order.playerId
+
+          }
+        );
+
+    }
+
+
+    else {
+
+      throw new Error(
+        "Tipo de produto inválido."
+      );
+
+    }
+
+
+    const current =
+      orders.get(order.id);
+
+
+    const updated = {
+
+      ...current,
+
+      deliveryStatus:
+        "delivered",
+
+      supplierTransactionId:
+        result?.transacao?.id ||
+        result?.transaction?.id ||
+        null,
+
+      supplierResponse:
+        result,
+
+      deliveredAt:
+        new Date().toISOString(),
+
+      updatedAt:
+        new Date().toISOString()
+
+    };
+
+
+    orders.set(
       order.id,
-      order.playerId,
-      order.categoryId,
-      order.offerId,
-      order.productName,
-      order.priceUsd,
-      order.priceBrl,
-      order.paymentMethod,
-      order.status,
-      order.asaasCheckoutId || null,
-      order.asaasExternalReference || null,
-      order.supplierOrderId || null,
-      order.supplierStatus || null
-    ]
-  );
-
-  return order;
-}
-
-async function getOrder(orderId) {
-  if (!pool) {
-    return (
-      memoryOrders.get(
-        orderId
-      ) || null
-    );
-  }
-
-  const result =
-    await pool.query(
-      `
-      SELECT *
-      FROM orders
-      WHERE id = $1
-      LIMIT 1
-      `,
-      [orderId]
+      updated
     );
 
-  if (!result.rows[0]) {
-    return null;
+
+    console.log(
+      `Entrega concluída: ${order.id}`
+    );
+
+
+    return updated;
+
+
+  } catch (error) {
+
+    console.error(
+      "Erro na entrega automática:",
+      error
+    );
+
+
+    const current =
+      orders.get(order.id);
+
+
+    const updated = {
+
+      ...current,
+
+      deliveryStatus:
+        "failed",
+
+      deliveryError:
+        error.message,
+
+      updatedAt:
+        new Date().toISOString()
+
+    };
+
+
+    orders.set(
+      order.id,
+      updated
+    );
+
+
+    return updated;
+
   }
 
-  return rowToOrder(
-    result.rows[0]
-  );
 }
 
-async function updateOrder(
-  orderId,
-  changes
-) {
-  const order =
-    await getOrder(orderId);
+
+// ======================================================
+// REMOVE DADOS SENSÍVEIS DA RESPOSTA
+// ======================================================
+
+function publicOrder(order) {
 
   if (!order) {
     return null;
   }
 
-  const updated = {
-    ...order,
-    ...changes,
-    updatedAt:
-      new Date().toISOString()
+  const safe = {
+    ...order
   };
 
-  if (!pool) {
-    memoryOrders.set(
-      orderId,
-      updated
-    );
+  delete safe.accessToken;
+  delete safe.externalReference;
+  delete safe.supplierResponse;
 
-    return updated;
-  }
+  return safe;
 
-  await pool.query(
-    `
-    UPDATE orders
-    SET
-      status = $2,
-      asaas_checkout_id = $3,
-      asaas_external_reference = $4,
-      supplier_order_id = $5,
-      supplier_status = $6,
-      updated_at = NOW()
-    WHERE id = $1
-    `,
-    [
-      orderId,
-      updated.status,
-      updated.asaasCheckoutId ||
-        null,
-      updated.asaasExternalReference ||
-        null,
-      updated.supplierOrderId ||
-        null,
-      updated.supplierStatus ||
-        null
-    ]
-  );
-
-  return updated;
 }
 
-async function findOrderByCheckoutId(
-  checkoutId
-) {
-  if (!checkoutId) {
-    return null;
-  }
 
-  if (!pool) {
-    for (
-      const order of memoryOrders.values()
-    ) {
-      if (
-        order.asaasCheckoutId ===
-        checkoutId
-      ) {
-        return order;
-      }
-    }
+// ======================================================
+// HEALTH CHECK
+// ======================================================
 
-    return null;
-  }
+app.get(
+  "/health",
+  (req, res) => {
 
-  const result =
-    await pool.query(
-      `
-      SELECT *
-      FROM orders
-      WHERE asaas_checkout_id = $1
-      LIMIT 1
-      `,
-      [checkoutId]
-    );
+    res.json({
 
-  return result.rows[0]
-    ? rowToOrder(
-        result.rows[0]
-      )
-    : null;
-}
+      ok: true,
 
-async function findOrderByReference(
-  reference
-) {
-  if (!reference) {
-    return null;
-  }
+      store:
+        STORE_NAME,
 
-  if (!pool) {
-    for (
-      const order of memoryOrders.values()
-    ) {
-      if (
-        order.asaasExternalReference ===
-        reference
-      ) {
-        return order;
-      }
-    }
+      freeFireConfigured:
+        Boolean(
+          FREEFIRE_USER_ID &&
+          FREEFIRE_API_KEY
+        ),
 
-    return null;
-  }
+      asaasConfigured:
+        Boolean(
+          ASAAS_API_KEY
+        ),
 
-  const result =
-    await pool.query(
-      `
-      SELECT *
-      FROM orders
-      WHERE asaas_external_reference = $1
-      LIMIT 1
-      `,
-      [reference]
-    );
-
-  return result.rows[0]
-    ? rowToOrder(
-        result.rows[0]
-      )
-    : null;
-}
-
-async function findOrderBySupplierOrderId(
-  supplierOrderId
-) {
-  if (!supplierOrderId) {
-    return null;
-  }
-
-  if (!pool) {
-    for (
-      const order of memoryOrders.values()
-    ) {
-      if (
-        order.supplierOrderId ===
-        supplierOrderId
-      ) {
-        return order;
-      }
-    }
-
-    return null;
-  }
-
-  const result =
-    await pool.query(
-      `
-      SELECT *
-      FROM orders
-      WHERE supplier_order_id = $1
-      LIMIT 1
-      `,
-      [supplierOrderId]
-    );
-
-  return result.rows[0]
-    ? rowToOrder(
-        result.rows[0]
-      )
-    : null;
-}
-
-function rowToOrder(row) {
-  return {
-    id:
-      row.id,
-
-    playerId:
-      row.player_id,
-
-    categoryId:
-      row.category_id,
-
-    offerId:
-      row.offer_id,
-
-    productName:
-      row.product_name,
-
-    priceUsd:
-      Number(
-        row.price_usd
-      ),
-
-    priceBrl:
-      Number(
-        row.price_brl
-      ),
-
-    paymentMethod:
-      row.payment_method,
-
-    status:
-      row.status,
-
-    asaasCheckoutId:
-      row.asaas_checkout_id,
-
-    asaasExternalReference:
-      row.asaas_external_reference,
-
-    supplierOrderId:
-      row.supplier_order_id,
-
-    supplierStatus:
-      row.supplier_status,
-
-    createdAt:
-      row.created_at,
-
-    updatedAt:
-      row.updated_at
-  };
-}
-
-/* =========================================================
-   WEBHOOK IDEMPOTÊNCIA
-========================================================= */
-
-async function webhookAlreadyProcessed(
-  provider,
-  eventId
-) {
-  if (!pool) {
-    return memoryWebhookEvents.has(
-      `${provider}:${eventId}`
-    );
-  }
-
-  const result =
-    await pool.query(
-      `
-      SELECT 1
-      FROM webhook_events
-      WHERE provider = $1
-      AND event_id = $2
-      LIMIT 1
-      `,
-      [
-        provider,
-        eventId
-      ]
-    );
-
-  return result.rowCount > 0;
-}
-
-async function saveWebhookEvent(
-  provider,
-  eventId
-) {
-  if (!pool) {
-    memoryWebhookEvents.add(
-      `${provider}:${eventId}`
-    );
-
-    return;
-  }
-
-  await pool.query(
-    `
-    INSERT INTO webhook_events (
-      provider,
-      event_id
-    )
-    VALUES ($1,$2)
-    ON CONFLICT DO NOTHING
-    `,
-    [
-      provider,
-      eventId
-    ]
-  );
-}
-
-/* =========================================================
-   ASAAS
-========================================================= */
-
-function asaasConfigured() {
-  return Boolean(
-    process.env.ASAAS_API_KEY
-  );
-}
-
-function getBaseUrl(req) {
-  const url =
-    process.env.PUBLIC_URL ||
-    `${req.protocol}://${req.get(
-      "host"
-    )}`;
-
-  return url.replace(
-    /\/$/,
-    ""
-  );
-}
-
-async function asaasRequest(
-  endpoint,
-  options = {}
-) {
-  if (!asaasConfigured()) {
-    throw new Error(
-      "ASAAS_API_KEY não configurada."
-    );
-  }
-
-  const response =
-    await fetch(
-      `${ASAAS_API_URL}${endpoint}`,
-      {
-        ...options,
-
-        headers: {
-          accept:
-            "application/json",
-
-          "content-type":
-            "application/json",
-
-          access_token:
-            process.env
-              .ASAAS_API_KEY,
-
-          ...(options.headers ||
-            {})
-        }
-      }
-    );
-
-  const text =
-    await response.text();
-
-  let data = {};
-
-  try {
-    data = text
-      ? JSON.parse(text)
-      : {};
-  } catch {
-    data = {
-      raw: text
-    };
-  }
-
-  if (!response.ok) {
-    console.error(
-      "Erro Asaas:",
-      response.status,
-      data
-    );
-
-    const message =
-      data?.errors
-        ?.map?.(
-          (error) =>
-            error.description
+      orderSecretConfigured:
+        Boolean(
+          ORDER_SECRET.length >= 32
         )
-        .join(" ") ||
-      data?.message ||
-      "Erro na API Asaas.";
 
-    throw new Error(
-      message
-    );
+    });
+
   }
+);
 
-  return data;
-}
 
-/* =========================================================
-   FAZERCARDS
-========================================================= */
+// ======================================================
+// PRODUTOS
+// ======================================================
 
-function fazerConfigured() {
-  return Boolean(
-    process.env.FAZER_API_KEY
-  );
-}
+app.get(
+  "/api/products",
+  (req, res) => {
 
-async function fazerRequest(
-  endpoint,
-  options = {}
-) {
-  if (!fazerConfigured()) {
-    throw new Error(
-      "FAZER_API_KEY não configurada."
-    );
+    res.json({
+
+      ok: true,
+
+      products:
+        Object.values(
+          products
+        )
+
+    });
+
   }
+);
 
-  const response =
-    await fetch(
-      `${FAZER_API_URL}${endpoint}`,
-      {
-        ...options,
 
-        headers: {
-          accept:
-            "application/json",
+// ======================================================
+// VERIFICAR TOKEN DO JOGADOR
+// ======================================================
 
-          "content-type":
-            "application/json",
+app.post(
+  "/api/verify-player",
+  async (req, res) => {
 
-          "X-API-Key":
-            process.env.FAZER_API_KEY,
+    try {
 
-          ...(options.headers ||
-            {})
-        }
+      const {
+        accessToken,
+        diamondAmount
+      } = req.body || {};
+
+
+      if (
+        !String(
+          accessToken || ""
+        ).trim()
+      ) {
+
+        return res.status(400).json({
+
+          ok: false,
+
+          error:
+            "Informe o accessToken do jogador."
+
+        });
+
       }
-    );
 
-  const text =
-    await response.text();
 
-  let data = {};
+      const data =
+        await freeFire(
+          "/api/v1/diamonds/verify",
+          {
 
-  try {
-    data = text
-      ? JSON.parse(text)
-      : {};
-  } catch {
-    data = {
-      raw: text
-    };
-  }
+            accessToken:
+              String(
+                accessToken
+              ),
 
-  if (!response.ok) {
-    console.error(
-      "Erro FazerCards:",
-      response.status,
-      data
-    );
+            ...(diamondAmount
+              ? {
+                  diamondAmount:
+                    String(
+                      diamondAmount
+                    )
+                }
+              : {})
 
-    throw new Error(
-      data?.error ||
-        data?.message ||
-        "Erro na API FazerCards."
-    );
-  }
+          }
+        );
 
-  if (
-    data &&
-    data.ok === false
-  ) {
-    throw new Error(
-      data.error ||
-        "FazerCards retornou erro."
-    );
-  }
 
-  return data;
-}
+      res.json({
 
-/* =========================================================
-   CACHE FAZERCARDS
-========================================================= */
+        ok: true,
 
-let freeFireCache = {
-  category: null,
-  offers: null,
-  fields: [],
-  expiresAt: 0
-};
+        data
 
-async function getFreeFireCategory() {
-  if (
-    FREE_FIRE_CATEGORY_ID
-  ) {
-    return {
-      category_id:
-        FREE_FIRE_CATEGORY_ID,
-      name:
-        "Free Fire (LATAM)"
-    };
-  }
+      });
 
-  const categories =
-    await fazerRequest(
-      "/topups?limit=50"
-    );
 
-  let items =
-    Array.isArray(
-      categories.items
-    )
-      ? [
-          ...categories.items
-        ]
-      : [];
+    } catch (error) {
 
-  let cursor =
-    categories?.meta
-      ?.next_cursor ||
-    null;
-
-  let attempts = 0;
-
-  while (
-    cursor &&
-    attempts < 10
-  ) {
-    const page =
-      await fazerRequest(
-        `/topups?limit=50&cursor=${encodeURIComponent(
-          cursor
-        )}`
+      console.error(
+        "Erro ao verificar jogador:",
+        error
       );
 
-    if (
-      Array.isArray(
-        page.items
-      )
-    ) {
-      items.push(
-        ...page.items
-      );
+
+      res.status(400).json({
+
+        ok: false,
+
+        error:
+          error.message
+
+      });
+
     }
 
-    cursor =
-      page?.meta
-        ?.next_cursor ||
-      null;
-
-    attempts++;
   }
+);
 
-  const exact =
-    items.find(
-      (item) =>
-        /free\s*fire/i.test(
+
+// ======================================================
+// CRIAR PEDIDO
+// ======================================================
+
+app.post(
+  "/api/orders",
+  async (req, res) => {
+
+    try {
+
+      const {
+        productId,
+        playerId,
+        accessToken
+      } = req.body || {};
+
+
+      // ----------------------------------------------
+      // PRODUTO
+      // ----------------------------------------------
+
+      const product =
+        products[productId];
+
+
+      if (!product) {
+
+        return res.status(400).json({
+
+          ok: false,
+
+          error:
+            "Produto inválido."
+
+        });
+
+      }
+
+
+      // ----------------------------------------------
+      // PLAYER ID
+      // ----------------------------------------------
+
+      if (
+        !/^\d{5,15}$/.test(
           String(
-            item.name || ""
-          )
-        ) &&
-        /latam/i.test(
-          String(
-            item.name || ""
+            playerId || ""
           )
         )
-    );
+      ) {
 
-  if (exact) {
-    return exact;
-  }
+        return res.status(400).json({
 
-  const freeFire =
-    items.find(
-      (item) =>
-        /free\s*fire/i.test(
+          ok: false,
+
+          error:
+            "Player ID inválido."
+
+        });
+
+      }
+
+
+      // ----------------------------------------------
+      // ACCESS TOKEN PARA DIAMANTES
+      // ----------------------------------------------
+
+      if (
+        product.type ===
+        "diamonds"
+      ) {
+
+        if (
+          !String(
+            accessToken || ""
+          ).trim()
+        ) {
+
+          return res.status(400).json({
+
+            ok: false,
+
+            error:
+              "Para diamantes, informe o token de acesso do jogador."
+
+          });
+
+        }
+
+      }
+
+
+      configured();
+
+
+      // ----------------------------------------------
+      // ID DO PEDIDO
+      // ----------------------------------------------
+
+      const orderId =
+        `VZ-${Date.now()}-${crypto
+          .randomBytes(3)
+          .toString("hex")}`;
+
+
+      // ----------------------------------------------
+      // REFERÊNCIA CRIPTOGRAFADA
+      // ----------------------------------------------
+
+      const secretReference =
+        encrypt(
+          JSON.stringify({
+
+            id:
+              orderId,
+
+            productId:
+              product.id,
+
+            type:
+              product.type,
+
+            amount:
+              product.amount ||
+              null,
+
+            quantity:
+              product.quantity ||
+              null,
+
+            playerId:
+              String(
+                playerId
+              ),
+
+            accessToken:
+              product.type ===
+              "diamonds"
+
+                ? String(
+                    accessToken
+                  )
+
+                : ""
+
+          })
+        );
+
+
+      // ----------------------------------------------
+      // PEDIDO
+      // ----------------------------------------------
+
+      const order = {
+
+        id:
+          orderId,
+
+        productId:
+          product.id,
+
+        type:
+          product.type,
+
+        productName:
+          product.name,
+
+        amount:
+          product.amount ||
+          null,
+
+        quantity:
+          product.quantity ||
+          null,
+
+        playerId:
           String(
-            item.name || ""
-          )
-        )
-    );
+            playerId
+          ),
 
-  if (freeFire) {
-    return freeFire;
+        accessToken:
+          product.type ===
+          "diamonds"
+
+            ? String(
+                accessToken
+              )
+
+            : "",
+
+        price:
+          product.price,
+
+        status:
+          "pending_payment",
+
+        deliveryStatus:
+          "waiting_payment",
+
+        externalReference:
+          secretReference,
+
+        createdAt:
+          new Date().toISOString(),
+
+        updatedAt:
+          new Date().toISOString()
+
+      };
+
+
+      orders.set(
+        orderId,
+        order
+      );
+
+
+      // ----------------------------------------------
+      // CRIAR CHECKOUT ASAAS
+      // ----------------------------------------------
+
+      const url =
+        baseUrl(req);
+
+
+      const checkout =
+        await asaas(
+          "/checkouts",
+          {
+
+            billingTypes: [
+              "PIX",
+              "CREDIT_CARD"
+            ],
+
+            chargeTypes: [
+              "DETACHED"
+            ],
+
+            minutesToExpire:
+              60,
+
+            externalReference:
+              secretReference,
+
+            callback: {
+
+              successUrl:
+                `${url}/?payment=success&order=${encodeURIComponent(
+                  orderId
+                )}`,
+
+              cancelUrl:
+                `${url}/?payment=cancelled&order=${encodeURIComponent(
+                  orderId
+                )}`,
+
+              expiredUrl:
+                `${url}/?payment=expired&order=${encodeURIComponent(
+                  orderId
+                )}`
+
+            },
+
+            items: [
+
+              {
+
+                externalReference:
+                  product.id,
+
+                name:
+                  product.name,
+
+                description:
+                  `Pedido ${orderId}`,
+
+                quantity:
+                  1,
+
+                value:
+                  product.price
+
+              }
+
+            ]
+
+          }
+        );
+
+
+      // ----------------------------------------------
+      // LINK DO CHECKOUT
+      // ----------------------------------------------
+
+      const checkoutLink =
+        checkout.link ||
+        `https://asaas.com/checkoutSession/show?id=${checkout.id}`;
+
+
+      orders.set(
+
+        orderId,
+
+        {
+
+          ...order,
+
+          checkoutId:
+            checkout.id,
+
+          checkoutLink:
+            checkoutLink,
+
+          updatedAt:
+            new Date().toISOString()
+
+        }
+
+      );
+
+
+      console.log(
+        `Pedido criado: ${orderId}`
+      );
+
+
+      res.json({
+
+        ok: true,
+
+        orderId:
+
+          orderId,
+
+        checkout: {
+
+          id:
+            checkout.id,
+
+          link:
+            checkoutLink
+
+        }
+
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao criar pedido:",
+        error
+      );
+
+
+      res.status(500).json({
+
+        ok: false,
+
+        error:
+          error.message
+
+      });
+
+    }
+
   }
+);
 
-  throw new Error(
-    "Não encontrei Free Fire LATAM no catálogo da FazerCards."
-  );
-}
 
-async function getFreeFireOffers(
-  force = false
-) {
-  if (
-    !force &&
-    freeFireCache.expiresAt >
-      Date.now() &&
-    freeFireCache.offers
-  ) {
-    return freeFireCache;
+// ======================================================
+// CONSULTAR PEDIDO
+// ======================================================
+
+app.get(
+  "/api/orders/:id",
+  (req, res) => {
+
+    const order =
+      orders.get(
+        req.params.id
+      );
+
+
+    if (!order) {
+
+      return res.status(404).json({
+
+        ok: false,
+
+        error:
+          "Pedido não encontrado."
+
+      });
+
+    }
+
+
+    res.json({
+
+      ok: true,
+
+      order:
+        publicOrder(order)
+
+    });
+
   }
+);
 
-  const category =
-    await getFreeFireCategory();
 
-  const result =
-    await fazerRequest(
-      `/topups/offers?category_id=${encodeURIComponent(
-        category.category_id
-      )}`
-    );
+// ======================================================
+// WEBHOOK ASAAS
+// ======================================================
 
-  freeFireCache = {
-    category,
+app.post(
+  "/api/webhooks/asaas",
+  async (req, res) => {
 
-    offers:
-      Array.isArray(
-        result.offers
-      )
-        ? result.offers
-        : [],
+    try {
 
-    fields:
-      Array.isArray(
-        result.fields
-      )
-        ? result.fields
-        : [],
+      // --------------------------------------------
+      // SEGURANÇA DO WEBHOOK
+      // --------------------------------------------
 
-    expiresAt:
-      Date.now() +
-      30 *
+      if (
+        WEBHOOK_AUTH_TOKEN
+      ) {
+
+        const received =
+          req.get(
+            "asaas-access-token"
+          ) ||
+          req
+            .get("Authorization")
+            ?.replace(
+              /^Bearer\s+/i,
+          
