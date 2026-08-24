@@ -2,12 +2,10 @@ require("dotenv").config();
 
 const express = require("express");
 const helmet = require("helmet");
-const path = require("path");
 const crypto = require("crypto");
 
 const app = express();
-
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT || 3000);
 
 app.set("trust proxy", 1);
 
@@ -41,11 +39,13 @@ const FAZERCARDS_CATEGORY_ID =
   process.env.FAZERCARDS_CATEGORY_ID ||
   "free_fire_br";
 
-const USD_BRL_RATE =
-  Number(process.env.USD_BRL_RATE || "5.50");
+const USD_BRL_RATE = Number(
+  process.env.USD_BRL_RATE || "5.50"
+);
 
-const MARKUP_PERCENT =
-  Number(process.env.MARKUP_PERCENT || "30");
+const MARKUP_PERCENT = Number(
+  process.env.MARKUP_PERCENT || "30"
+);
 
 const ASAAS_API_URL = (
   process.env.ASAAS_API_URL ||
@@ -55,13 +55,15 @@ const ASAAS_API_URL = (
 const ASAAS_API_KEY =
   process.env.ASAAS_API_KEY || "";
 
+const ASAAS_WEBHOOK_TOKEN =
+  process.env.ASAAS_WEBHOOK_TOKEN || "";
+
 const APP_URL = (
   process.env.APP_URL || ""
 ).replace(/\/$/, "");
 
-
 /* =====================================================
-   CACHE DO CATÁLOGO
+   CACHE
 ===================================================== */
 
 let catalogCache = {
@@ -72,15 +74,12 @@ let catalogCache = {
 
 const CATALOG_TTL = 5 * 60 * 1000;
 
-
 /* =====================================================
    PEDIDOS
 ===================================================== */
 
 const orders = new Map();
-
 const processedWebhookEvents = new Set();
-
 
 /* =====================================================
    CONFIGURAÇÃO DO FORNECEDOR
@@ -111,14 +110,13 @@ function checkSupplierConfig() {
     missing.push("MARKUP_PERCENT");
   }
 
-  if (missing.length) {
+  if (missing.length > 0) {
     throw new Error(
       "Variáveis do FazerCards ausentes: " +
       missing.join(", ")
     );
   }
 }
-
 
 /* =====================================================
    CONFIGURAÇÃO DO ASAAS
@@ -135,7 +133,7 @@ function checkPaymentConfig() {
     missing.push("APP_URL");
   }
 
-  if (missing.length) {
+  if (missing.length > 0) {
     throw new Error(
       "Variáveis do Asaas ausentes: " +
       missing.join(", ")
@@ -143,22 +141,18 @@ function checkPaymentConfig() {
   }
 }
 
-
 /* =====================================================
    REQUEST JSON
 ===================================================== */
 
 async function requestJson(url, options = {}) {
   const response = await fetch(url, options);
-
   const text = await response.text();
 
   let data = {};
 
   try {
-    data = text
-      ? JSON.parse(text)
-      : {};
+    data = text ? JSON.parse(text) : {};
   } catch {
     data = {
       raw: text
@@ -184,7 +178,6 @@ async function requestJson(url, options = {}) {
 
   return data;
 }
-
 
 /* =====================================================
    FAZERCARDS
@@ -212,15 +205,11 @@ async function fazerCardsRequest(
   );
 }
 
-
 /* =====================================================
    ASAAS
 ===================================================== */
 
-async function asaasRequest(
-  endpoint,
-  body
-) {
+async function asaasRequest(endpoint, body) {
   checkPaymentConfig();
 
   return requestJson(
@@ -238,7 +227,6 @@ async function asaasRequest(
     }
   );
 }
-
 
 /* =====================================================
    ID DO PEDIDO
@@ -258,9 +246,8 @@ function createOrderId() {
   );
 }
 
-
 /* =====================================================
-   PREÇO DE VENDA
+   PREÇO
 ===================================================== */
 
 function calculateRetailPrice(usdPrice) {
@@ -287,9 +274,8 @@ function calculateRetailPrice(usdPrice) {
   );
 }
 
-
 /* =====================================================
-   CARREGAR CATÁLOGO FAZERCARDS
+   CARREGAR PRODUTOS
 ===================================================== */
 
 async function loadFazerCardsProducts(
@@ -316,7 +302,7 @@ async function loadFazerCardsProducts(
       }
     );
 
-  if (!data.ok) {
+  if (data.ok === false) {
     throw new Error(
       data.error ||
       "FazerCards não retornou as ofertas."
@@ -336,14 +322,10 @@ async function loadFazerCardsProducts(
   const products = offers
     .map((offer, index) => {
       const usdPrice =
-        Number(
-          offer.price_usd
-        );
+        Number(offer.price_usd);
 
       if (
-        !Number.isFinite(
-          usdPrice
-        ) ||
+        !Number.isFinite(usdPrice) ||
         usdPrice <= 0
       ) {
         return null;
@@ -360,35 +342,31 @@ async function loadFazerCardsProducts(
         return null;
       }
 
+      const offerId =
+        String(
+          offer.offer_id ||
+          offer.id ||
+          ""
+        ).trim();
+
+      if (!offerId) {
+        return null;
+      }
+
       return {
-        id:
-          String(
-            offer.offer_id
-          ),
-
-        offerId:
-          String(
-            offer.offer_id
-          ),
-
+        id: offerId,
+        offerId,
         categoryId:
           FAZERCARDS_CATEGORY_ID,
-
-        type:
-          "diamonds",
+        type: "diamonds",
 
         name:
           offer.name ||
           `Oferta ${index + 1}`,
 
-        price:
-          retailPrice,
-
-        supplierPriceUsd:
-          usdPrice,
-
-        requires:
-          "playerId"
+        price: retailPrice,
+        supplierPriceUsd: usdPrice,
+        requires: "playerId"
       };
     })
     .filter(Boolean);
@@ -406,7 +384,6 @@ async function loadFazerCardsProducts(
   return catalogCache;
 }
 
-
 /* =====================================================
    CAMPOS DO JOGADOR
 ===================================================== */
@@ -415,14 +392,12 @@ function getPlayerFields() {
   return catalogCache.fields || [];
 }
 
-
 /* =====================================================
-   MONTAR CAMPOS DO TOP-UP
+   MONTAR CAMPOS
 ===================================================== */
 
 function buildTopupFields(playerId) {
-  const fields =
-    getPlayerFields();
+  const fields = getPlayerFields();
 
   if (!fields.length) {
     throw new Error(
@@ -432,9 +407,7 @@ function buildTopupFields(playerId) {
 
   const result = {};
 
-  for (
-    const field of fields
-  ) {
+  for (const field of fields) {
     const key =
       String(
         field.key || ""
@@ -453,15 +426,9 @@ function buildTopupFields(playerId) {
       key === "role_id" ||
       key === "roleId"
     ) {
-      result[key] =
-        playerId;
+      result[key] = playerId;
     }
   }
-
-  /*
-    Caso a categoria tenha apenas um
-    campo obrigatório, usamos esse campo.
-  */
 
   if (
     Object.keys(result).length === 0 &&
@@ -473,8 +440,7 @@ function buildTopupFields(playerId) {
       ).trim();
 
     if (onlyKey) {
-      result[onlyKey] =
-        playerId;
+      result[onlyKey] = playerId;
     }
   }
 
@@ -487,20 +453,13 @@ function buildTopupFields(playerId) {
   }
 
   return result;
-}
-
-
-/* =====================================================
+}/* =====================================================
    VALIDAR PLAYER ID
 ===================================================== */
 
-async function validatePlayerId(
-  playerId
-) {
+async function validatePlayerId(playerId) {
   const fields =
-    buildTopupFields(
-      playerId
-    );
+    buildTopupFields(playerId);
 
   const data =
     await fazerCardsRequest(
@@ -508,13 +467,17 @@ async function validatePlayerId(
       {
         method: "POST",
 
-        body:
-          JSON.stringify({
-            category_id:
-              FAZERCARDS_CATEGORY_ID,
+        headers: {
+          "Idempotency-Key":
+            crypto.randomUUID()
+        },
 
-            fields
-          })
+        body: JSON.stringify({
+          category_id:
+            FAZERCARDS_CATEGORY_ID,
+
+          fields
+        })
       }
     );
 
@@ -532,14 +495,11 @@ async function validatePlayerId(
   };
 }
 
-
 /* =====================================================
    CRIAR PEDIDO NO FAZERCARDS
 ===================================================== */
 
-async function createFazerCardsOrder(
-  order
-) {
+async function createFazerCardsOrder(order) {
   const fields =
     buildTopupFields(
       order.playerId
@@ -556,20 +516,19 @@ async function createFazerCardsOrder(
             order.id
         },
 
-        body:
-          JSON.stringify({
-            category_id:
-              order.categoryId,
+        body: JSON.stringify({
+          category_id:
+            order.categoryId,
 
-            offer_id:
-              order.offerId,
+          offer_id:
+            order.offerId,
 
-            fields
-          })
+          fields
+        })
       }
     );
 
-  if (!data.ok) {
+  if (data.ok === false) {
     throw new Error(
       data.error ||
       "FazerCards recusou o pedido."
@@ -579,9 +538,8 @@ async function createFazerCardsOrder(
   return data;
 }
 
-
 /* =====================================================
-   CONSULTAR PEDIDO DO FAZERCARDS
+   CONSULTAR PEDIDO FAZERCARDS
 ===================================================== */
 
 async function getFazerCardsOrder(
@@ -597,9 +555,8 @@ async function getFazerCardsOrder(
   );
 }
 
-
 /* =====================================================
-   MONITORAR PEDIDO DO FORNECEDOR
+   MONITORAR ENTREGA
 ===================================================== */
 
 async function monitorSupplierOrder(
@@ -733,6 +690,152 @@ async function monitorSupplierOrder(
   }
 }
 
+/* =====================================================
+   INICIAR ENTREGA
+===================================================== */
+
+async function processPaidOrder(order) {
+  if (!order) {
+    return;
+  }
+
+  const current =
+    orders.get(order.id);
+
+  if (!current) {
+    return;
+  }
+
+  /*
+    Não enviar novamente se já foi enviado.
+  */
+
+  if (
+    current.supplierOrderId ||
+    current.status === "processing" ||
+    current.status === "supplier_processing" ||
+    current.status === "completed"
+  ) {
+    return;
+  }
+
+  orders.set(
+    order.id,
+    {
+      ...current,
+
+      status:
+        "processing",
+
+      deliveryStatus:
+        "processing",
+
+      paidAt:
+        current.paidAt ||
+        new Date().toISOString()
+    }
+  );
+
+  try {
+    const supplierResult =
+      await createFazerCardsOrder(
+        current
+      );
+
+    const supplierOrder =
+      supplierResult.order ||
+      supplierResult.data ||
+      supplierResult;
+
+    const supplierOrderId =
+      supplierResult.order_id ||
+      supplierResult.orderId ||
+      supplierOrder?.order_id ||
+      supplierOrder?.orderId ||
+      supplierOrder?.id ||
+      supplierResult.id ||
+      null;
+
+    if (!supplierOrderId) {
+      throw new Error(
+        "FazerCards não retornou o ID do pedido."
+      );
+    }
+
+    orders.set(
+      order.id,
+      {
+        ...orders.get(
+          order.id
+        ),
+
+        supplierOrderId:
+          String(
+            supplierOrderId
+          ),
+
+        supplierOrder,
+
+        status:
+          "supplier_processing",
+
+        deliveryStatus:
+          "supplier_processing",
+
+        supplierCreatedAt:
+          new Date().toISOString()
+      }
+    );
+
+    console.log(
+      "Pedido enviado ao FazerCards:",
+      order.id,
+      supplierOrderId
+    );
+
+    monitorSupplierOrder(
+      order.id,
+      String(
+        supplierOrderId
+      )
+    ).catch(
+      error =>
+        console.error(
+          "Erro no monitoramento:",
+          error.message
+        )
+    );
+  } catch (error) {
+    console.error(
+      "Erro enviando pedido ao FazerCards:",
+      error
+    );
+
+    const currentOrder =
+      orders.get(
+        order.id
+      );
+
+    orders.set(
+      order.id,
+      {
+        ...(currentOrder || order),
+
+        status:
+          "supplier_error",
+
+        deliveryStatus:
+          "supplier_error",
+
+        supplierError:
+          error.message,
+
+        supplierErrorAt:
+          new Date().toISOString()
+      }
+    );
+  }
+}
 
 /* =====================================================
    PRODUTOS
@@ -773,7 +876,6 @@ app.get(
     }
   }
 );
-
 
 /* =====================================================
    ATUALIZAR CATÁLOGO
@@ -816,9 +918,8 @@ app.get(
   }
 );
 
-
 /* =====================================================
-   CONFIGURAÇÃO
+   CONFIGURAÇÃO DO SITE
 ===================================================== */
 
 app.get(
@@ -844,11 +945,15 @@ app.get(
       paymentConfigured:
         Boolean(
           ASAAS_API_KEY
+        ),
+
+      webhookConfigured:
+        Boolean(
+          ASAAS_WEBHOOK_TOKEN
         )
     });
   }
 );
-
 
 /* =====================================================
    CRIAR PEDIDO
@@ -891,7 +996,9 @@ app.post(
         catalog.products.find(
           item =>
             item.id ===
-            String(productId)
+            String(
+              productId
+            )
         );
 
       if (!product) {
@@ -904,8 +1011,8 @@ app.post(
       }
 
       /*
-        Validamos o ID antes de criar
-        o checkout de pagamento.
+        Validamos o Player ID antes
+        de criar o checkout.
       */
 
       let validation;
@@ -989,7 +1096,7 @@ app.post(
       );
 
       /* =================================================
-         CRIAR CHECKOUT ASAAS
+         CHECKOUT ASAAS
       ================================================= */
 
       const checkout =
@@ -1111,6 +1218,316 @@ app.post(
       });
     }
   }
+);      const cleanPlayerId =
+        String(
+          playerId || ""
+        ).trim();
+
+
+      if (
+        !/^\d{5,15}$/.test(
+          cleanPlayerId
+        )
+      ) {
+
+        return res.status(400).json({
+
+          ok:
+            false,
+
+          error:
+            "Player ID inválido."
+
+        });
+
+      }
+
+
+      const catalog =
+        await loadFazerCardsProducts();
+
+
+      const product =
+        catalog.products.find(
+          item =>
+            item.id ===
+            String(
+              productId
+            )
+        );
+
+
+      if (!product) {
+
+        return res.status(400).json({
+
+          ok:
+            false,
+
+          error:
+            "Produto inválido ou não está mais disponível."
+
+        });
+
+      }
+
+
+      /*
+        Validamos o ID do jogador
+        antes de criar o pagamento.
+      */
+
+      let validation;
+
+      try {
+
+        validation =
+          await validatePlayerId(
+            cleanPlayerId
+          );
+
+      } catch (validationError) {
+
+        return res.status(400).json({
+
+          ok:
+            false,
+
+          error:
+            "Não foi possível validar o Player ID: " +
+            validationError.message
+
+        });
+
+      }
+
+
+      if (
+        validation.valid === false
+      ) {
+
+        return res.status(400).json({
+
+          ok:
+            false,
+
+          error:
+            "Player ID inválido no FazerCards."
+
+        });
+
+      }
+
+
+      const orderId =
+        createOrderId();
+
+
+      const order = {
+
+        id:
+          orderId,
+
+        productId:
+          product.id,
+
+        offerId:
+          product.offerId,
+
+        categoryId:
+          product.categoryId,
+
+        productName:
+          product.name,
+
+        type:
+          product.type,
+
+        playerId:
+          cleanPlayerId,
+
+        playerName:
+          validation.playerName,
+
+        region:
+          validation.region,
+
+        supplierPriceUsd:
+          product.supplierPriceUsd,
+
+        price:
+          product.price,
+
+        status:
+          "waiting_payment",
+
+        deliveryStatus:
+          "waiting_payment",
+
+        createdAt:
+          new Date().toISOString()
+
+      };
+
+
+      orders.set(
+        orderId,
+        order
+      );
+
+
+      /* =================================================
+         CRIAR CHECKOUT ASAAS
+      ================================================= */
+
+      const checkout =
+        await asaasRequest(
+          "/checkouts",
+          {
+
+            billingTypes: [
+              "PIX",
+              "CREDIT_CARD"
+            ],
+
+            chargeTypes: [
+              "DETACHED"
+            ],
+
+            minutesToExpire:
+              60,
+
+            externalReference:
+              orderId,
+
+            callback: {
+
+              successUrl:
+                `${APP_URL}/?payment=success&order=${encodeURIComponent(
+                  orderId
+                )}`,
+
+              cancelUrl:
+                `${APP_URL}/?payment=cancelled&order=${encodeURIComponent(
+                  orderId
+                )}`,
+
+              expiredUrl:
+                `${APP_URL}/?payment=expired&order=${encodeURIComponent(
+                  orderId
+                )}`
+
+            },
+
+            items: [
+
+              {
+
+                externalReference:
+                  product.id,
+
+                name:
+                  product.name,
+
+                description:
+                  `Pedido VIBEZ DIAMONDS ${orderId}`,
+
+                quantity:
+                  1,
+
+                value:
+                  product.price
+
+              }
+
+            ]
+
+          }
+        );
+
+
+      const checkoutLink =
+        checkout.link ||
+        (
+          checkout.id
+            ? `https://asaas.com/checkoutSession/show?id=${encodeURIComponent(
+                checkout.id
+              )}`
+            : null
+        );
+
+
+      if (!checkoutLink) {
+
+        throw new Error(
+          "Asaas não retornou o link do checkout."
+        );
+
+      }
+
+
+      orders.set(
+        orderId,
+        {
+
+          ...order,
+
+          checkoutId:
+            checkout.id ||
+            null,
+
+          checkoutLink,
+
+          checkoutStatus:
+            checkout.status ||
+            "ACTIVE"
+
+        }
+      );
+
+
+      res.json({
+
+        ok:
+          true,
+
+        orderId,
+
+        checkout: {
+
+          id:
+            checkout.id ||
+            null,
+
+          link:
+            checkoutLink
+
+        }
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao criar pedido:",
+        error
+      );
+
+
+      res.status(500).json({
+
+        ok:
+          false,
+
+        error:
+          error.message ||
+          "Erro ao criar pagamento."
+
+      });
+
+    }
+
+  }
 );
 
 
@@ -1120,8 +1537,432 @@ app.post(
 
 app.get(
   "/api/orders/:id",
-  (req, res) => {
+  (
+    req,
+    res
+  ) => {
+
     const order =
       orders.get(
         req.params.id
-   
+      );
+
+
+    if (!order) {
+
+      return res.status(404).json({
+
+        ok:
+          false,
+
+        error:
+          "Pedido não encontrado."
+
+      });
+
+    }
+
+
+    res.json({
+
+      ok:
+        true,
+
+      order
+
+    });
+
+  }
+);
+
+
+/* =====================================================
+   WEBHOOK ASAAS
+===================================================== */
+
+app.post(
+  "/api/webhooks/asaas",
+  async (
+    req,
+    res
+  ) => {
+
+    try {
+
+      /*
+        Proteção opcional por token.
+        Se ASAAS_WEBHOOK_TOKEN estiver
+        configurado, exigimos o mesmo token
+        no header.
+      */
+
+      if (
+        ASAAS_WEBHOOK_TOKEN
+      ) {
+
+        const receivedToken =
+          String(
+            req.headers[
+              "asaas-access-token"
+            ] ||
+            req.headers[
+              "x-asaas-access-token"
+            ] ||
+            ""
+          ).trim();
+
+
+        if (
+          receivedToken !==
+          ASAAS_WEBHOOK_TOKEN
+        ) {
+
+          return res.status(401).json({
+
+            ok:
+              false,
+
+            error:
+              "Webhook não autorizado."
+
+          });
+
+        }
+
+      }
+
+
+      const event =
+        req.body || {};
+
+
+      const eventId =
+        String(
+          event.id ||
+          event.eventId ||
+          crypto.randomUUID()
+        );
+
+
+      /*
+        Evita processar o mesmo webhook
+        duas vezes.
+      */
+
+      if (
+        processedWebhookEvents.has(
+          eventId
+        )
+      ) {
+
+        return res.json({
+
+          ok:
+            true,
+
+          duplicate:
+            true
+
+        });
+
+      }
+
+
+      processedWebhookEvents.add(
+        eventId
+      );
+
+
+      const eventType =
+        String(
+          event.event ||
+          event.type ||
+          ""
+        ).toUpperCase();
+
+
+      const payment =
+        event.payment ||
+        event.data?.payment ||
+        event.data ||
+        {};
+
+
+      const externalReference =
+        payment.externalReference ||
+        payment.external_reference ||
+        event.externalReference ||
+        null;
+
+
+      if (
+        !externalReference
+      ) {
+
+        return res.json({
+
+          ok:
+            true,
+
+          ignored:
+            true,
+
+          reason:
+            "Sem externalReference."
+
+        });
+
+      }
+
+
+      const order =
+        orders.get(
+          String(
+            externalReference
+          )
+        );
+
+
+      if (!order) {
+
+        return res.json({
+
+          ok:
+            true,
+
+          ignored:
+            true,
+
+          reason:
+            "Pedido local não encontrado."
+
+        });
+
+      }
+
+
+      /*
+        Eventos considerados como pagamento
+        confirmado pelo Asaas.
+      */
+
+      const paidEvents = new Set([
+
+        "PAYMENT_CONFIRMED",
+
+        "PAYMENT_RECEIVED",
+
+        "PAYMENT_APPROVED"
+
+      ]);
+
+
+      if (
+        paidEvents.has(
+          eventType
+        )
+      ) {
+
+        const updatedOrder = {
+
+          ...order,
+
+          status:
+            "paid",
+
+          paymentStatus:
+            eventType,
+
+          paymentId:
+            payment.id ||
+            null,
+
+          paidAt:
+            order.paidAt ||
+            new Date().toISOString()
+
+        };
+
+
+        orders.set(
+          order.id,
+          updatedOrder
+        );
+
+
+        console.log(
+          "Pagamento confirmado:",
+          order.id
+        );
+
+
+        /*
+          Depois que o pagamento é confirmado,
+          enviamos automaticamente o pedido
+          para o FazerCards.
+        */
+
+        processPaidOrder(
+          updatedOrder
+        ).catch(
+          error =>
+            console.error(
+              "Erro processando pedido pago:",
+              error.message
+            )
+        );
+
+      }
+
+
+      if (
+        eventType ===
+          "PAYMENT_OVERDUE" ||
+        eventType ===
+          "PAYMENT_DELETED" ||
+        eventType ===
+          "PAYMENT_REFUNDED" ||
+        eventType ===
+          "PAYMENT_REFUND_IN_PROGRESS"
+      ) {
+
+        orders.set(
+          order.id,
+          {
+
+            ...order,
+
+            status:
+              eventType.toLowerCase(),
+
+            paymentStatus:
+              eventType
+
+          }
+        );
+
+      }
+
+
+      res.json({
+
+        ok:
+          true
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Erro no webhook Asaas:",
+        error
+      );
+
+
+      /*
+        Retornamos 200 somente quando o evento
+        foi processado com sucesso.
+      */
+
+      res.status(500).json({
+
+        ok:
+          false,
+
+        error:
+          error.message ||
+          "Erro processando webhook."
+
+      });
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   HEALTH CHECK
+===================================================== */
+
+app.get(
+  "/api/health",
+  (
+    req,
+    res
+  ) => {
+
+    res.json({
+
+      ok:
+        true,
+
+      service:
+        "VIBEZ DIAMONDS",
+
+      status:
+        "online",
+
+      time:
+        new Date().toISOString()
+
+    });
+
+  }
+);
+
+
+/* =====================================================
+   INICIAR SERVIDOR
+===================================================== */
+
+app.listen(
+  PORT,
+  () => {
+
+    console.log(
+      "=========================================="
+    );
+
+    console.log(
+      "VIBEZ DIAMONDS"
+    );
+
+    console.log(
+      "Servidor iniciado."
+    );
+
+    console.log(
+      `Porta: ${PORT}`
+    );
+
+    console.log(
+      `FazerCards: ${
+        FAZERCARDS_API_KEY
+          ? "CONFIGURADO"
+          : "NÃO CONFIGURADO"
+      }`
+    );
+
+    console.log(
+      `Asaas: ${
+        ASAAS_API_KEY
+          ? "CONFIGURADO"
+          : "NÃO CONFIGURADO"
+      }`
+    );
+
+    console.log(
+      `Webhook Asaas: ${
+        ASAAS_WEBHOOK_TOKEN
+          ? "PROTEGIDO"
+          : "SEM TOKEN"
+      }`
+    );
+
+    console.log(
+      "=========================================="
+    );
+
+  }
+);
